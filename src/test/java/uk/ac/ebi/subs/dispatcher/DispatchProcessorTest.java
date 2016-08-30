@@ -15,11 +15,8 @@ import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.data.submittable.Submission;
 import uk.ac.ebi.subs.messaging.Channels;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertThat;
 
-import java.util.*;
+import java.util.Date;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DispatcherApplication.class)
@@ -41,7 +38,7 @@ public class DispatchProcessorTest {
     MessageConverter messageConverter;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         this.rabbitMessagingTemplate.setMessageConverter(this.messageConverter);
 
         this.messagesToEna = 0;
@@ -72,30 +69,30 @@ public class DispatchProcessorTest {
 
     @Test
     public void testTheLoop() throws InterruptedException {
-        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_SUBMITTED,sub);
-
+        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_SUBMITTED, sub);
 
 
         sample.setAccession("SAMPLE1");
 
-        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED,sub);
+        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED, sub);
 
 
         enaStudy.setAccession("ENA1");
 
-        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED,sub);
+        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED, sub);
 
         aeStudy.setAccession("AE1");
 
-        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED,sub);
+        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED, sub);
 
 
         Thread.sleep(500);
-        System.out.println("BioSamples messages: "+messagesToBioSamples);
-        System.out.println("ENA messages: "+messagesToEna);
-        System.out.println("AE messages: "+messagesToAe);
+        System.out.println("BioSamples messages: " + messagesToBioSamples);
+        System.out.println("ENA messages: " + messagesToEna);
+        System.out.println("AE messages: " + messagesToAe);
 
     }
+
 
 
 
