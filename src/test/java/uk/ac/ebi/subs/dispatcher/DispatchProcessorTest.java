@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
-import uk.ac.ebi.subs.data.component.Realm;
+import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.data.submittable.Submission;
@@ -52,17 +52,17 @@ public class DispatchProcessorTest {
         sub.setSubmissionDate(new Date());
 
         sample = new Sample();
-        sample.setRealm(Realm.Usi);
+        sample.setArchive(Archive.Usi);
 
         sub.getSamples().add(sample);
 
         enaStudy = new Study();
-        enaStudy.setRealm(Realm.Sequencing);
+        enaStudy.setArchive(Archive.Ena);
 
         sub.getStudies().add(enaStudy);
 
         aeStudy = new Study();
-        aeStudy.setRealm(Realm.Arrays);
+        aeStudy.setArchive(Archive.ArrayExpress);
 
         sub.getStudies().add(aeStudy);
     }

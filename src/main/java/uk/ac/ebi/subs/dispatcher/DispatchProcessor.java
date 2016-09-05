@@ -5,14 +5,9 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.data.component.SubsLink;
 import uk.ac.ebi.subs.data.submittable.Submission;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.messaging.Channels;
-
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Set;
 
 
 @Service
@@ -48,15 +43,12 @@ public class DispatchProcessor {
             if (submittable.isAccessioned()) {
                 continue;
             }
-            switch (submittable.getRealm()) {
-                case Arrays:
+            switch (submittable.getArchive()) {
+                case ArrayExpress:
                     arrayExpressCount++;
                     break;
-                case Sequencing:
+                case Ena:
                     enaCount++;
-                    break;
-                case FunctionalGenomics:
-                    arrayExpressCount++;
                     break;
                 default:
                     break;
