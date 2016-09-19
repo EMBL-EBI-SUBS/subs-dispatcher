@@ -41,7 +41,8 @@ public class DispatchProcessor {
         int arrayExpressCount = 0;
 
         for (Submittable submittable : submission.allSubmissionItems()) {
-            if (submittable.isAccessioned()) {
+            if (submittable.isAccessioned() ||
+                    (submittable.getStatus() != null && submittable.getStatus().equals("processed"))) {
                 continue;
             }
 
