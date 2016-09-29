@@ -33,7 +33,7 @@ public class DispatchProcessor {
     @RabbitListener(queues = {Queues.SUBMISSION_DISPATCHER})
     public void handleSubmissionEvent(Submission submission) {
 
-        logger.info("received submission {} {}",submission.getId(),submission.getLastHandler());
+        logger.info("received submission {}",submission.getId());
 
         /*
         * this is a deliberately simple implementation for prototyping
