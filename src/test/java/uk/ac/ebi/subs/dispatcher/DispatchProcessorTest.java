@@ -14,7 +14,7 @@ import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.data.submittable.Submission;
-import uk.ac.ebi.subs.messaging.Channels;
+import uk.ac.ebi.subs.messaging.Topics;
 
 import java.util.Date;
 
@@ -69,21 +69,21 @@ public class DispatchProcessorTest {
 
     @Test
     public void testTheLoop() throws InterruptedException {
-        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_SUBMITTED, sub);
+        rabbitMessagingTemplate.convertAndSend(Topics.EVENT_SUBMISSION_SUBMITTED, sub);
 
 
         sample.setAccession("SAMPLE1");
 
-        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED, sub);
+        rabbitMessagingTemplate.convertAndSend(Topics.EVENT_SUBMISSION_PROCESSED, sub);
 
 
         enaStudy.setAccession("ENA1");
 
-        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED, sub);
+        rabbitMessagingTemplate.convertAndSend(Topics.EVENT_SUBMISSION_PROCESSED, sub);
 
         aeStudy.setAccession("AE1");
 
-        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED, sub);
+        rabbitMessagingTemplate.convertAndSend(Topics.EVENT_SUBMISSION_PROCESSED, sub);
 
 
         Thread.sleep(500);
@@ -96,7 +96,7 @@ public class DispatchProcessorTest {
 
 
 
-    @RabbitListener(queues = Channels.ENA_PROCESSING)
+    @RabbitListener(queues = Topics.ENA_PROCESSING)
     public void handleEna(Submission submission) {
         synchronized (this) {
             this.messagesToEna++;
@@ -104,7 +104,7 @@ public class DispatchProcessorTest {
         }
     }
 
-    @RabbitListener(queues = Channels.SAMPLES_PROCESSING)
+    @RabbitListener(queues = Topics.SAMPLES_PROCESSING)
     public void handleSamples(Submission submission) {
         synchronized (this) {
             this.messagesToBioSamples++;
@@ -112,7 +112,7 @@ public class DispatchProcessorTest {
         }
     }
 
-    @RabbitListener(queues = Channels.AE_PROCESSING)
+    @RabbitListener(queues = Topics.AE_PROCESSING)
     public void handleAe(Submission submission) {
         synchronized (this) {
             this.messagesToAe++;
