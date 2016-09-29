@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.dispatcher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,9 @@ import uk.ac.ebi.subs.messaging.Channels;
 @Service
 public class DispatchProcessor {
 
+    private static final Logger logger = LoggerFactory.getLogger(DispatchProcessor.class);
+
+
     RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Autowired
@@ -25,6 +30,8 @@ public class DispatchProcessor {
 
     @RabbitListener(queues = {Channels.SUBMISSION_SUBMITTED, Channels.SUBMISSION_PROCESSED})
     public void handleSubmissionEvent(Submission submission) {
+
+        logger.info("received submission {}",submission.getId());
 
         /*
         * this is a deliberately simple implementation for prototyping
@@ -75,6 +82,10 @@ public class DispatchProcessor {
 
         if (targetQueue != null) {
             rabbitMessagingTemplate.convertAndSend(targetQueue, submission);
+            logger.info("sent submission {} to {}",submission.getId(),targetQueue);
+        }
+        else {
+            logger.info("completed submission {}",submission.getId());
         }
     }
 }
