@@ -7,8 +7,9 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.subs.data.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
-import uk.ac.ebi.subs.data.submittable.Submission;
+import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
@@ -30,8 +31,9 @@ public class DispatchProcessor {
     }
 
 
-    @RabbitListener(queues = {Queues.SUBMISSION_DISPATCHER})
-    public void handleSubmissionEvent(Submission submission) {
+    @RabbitListener(queues = Queues.SUBMISSION_DISPATCHER)
+    public void handleSubmissionEvent(SubmissionEnvelope submissionEnvelope) {
+        Submission submission = submissionEnvelope.getSubmission();
 
         logger.info("received submission {}",submission.getId());
 
@@ -83,7 +85,7 @@ public class DispatchProcessor {
         }
 
         if (targetQueue != null) {
-            rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,targetQueue, submission);
+            rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,targetQueue, submissionEnvelope);
             logger.info("sent submission {} to {}",submission.getId(),targetQueue);
         }
         else {

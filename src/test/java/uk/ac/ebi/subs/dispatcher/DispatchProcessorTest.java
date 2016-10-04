@@ -10,10 +10,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
+import uk.ac.ebi.subs.data.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
-import uk.ac.ebi.subs.data.submittable.Submission;
+import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
@@ -28,6 +29,7 @@ public class DispatchProcessorTest {
     int messagesToBioSamples = 0;
     int messagesToAe = 0;
 
+    SubmissionEnvelope subEnv;
     Submission sub;
     Sample sample;
     Study enaStudy;
@@ -67,25 +69,29 @@ public class DispatchProcessorTest {
         aeStudy.setArchive(Archive.ArrayExpress);
 
         sub.getStudies().add(aeStudy);
+
+        subEnv = new SubmissionEnvelope(sub);
+        System.out.println(subEnv);
     }
 
     @Test
     public void testTheLoop() throws InterruptedException {
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_SUBMITTED, sub);
+        //TODO these messages are received with a null submission in the envelope
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_SUBMITTED, subEnv);
 
 
         sample.setAccession("SAMPLE1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, sub);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
 
 
         enaStudy.setAccession("ENA1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, sub);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
 
         aeStudy.setAccession("AE1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, sub);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
 
 
         Thread.sleep(500);
@@ -99,7 +105,7 @@ public class DispatchProcessorTest {
 
 
     @RabbitListener(queues = Queues.ENA_AGENT)
-    public void handleEna(Submission submission) {
+    public void handleEna(SubmissionEnvelope submissionEnvelope) {
         synchronized (this) {
             this.messagesToEna++;
             System.out.println("ENA!");
@@ -107,7 +113,7 @@ public class DispatchProcessorTest {
     }
 
     @RabbitListener(queues = Queues.BIOSAMPLES_AGENT)
-    public void handleSamples(Submission submission) {
+    public void handleSamples(SubmissionEnvelope submissionEnvelope) {
         synchronized (this) {
             this.messagesToBioSamples++;
             System.out.println("BioSamples!");
@@ -115,7 +121,7 @@ public class DispatchProcessorTest {
     }
 
     @RabbitListener(queues = Queues.AE_AGENT)
-    public void handleAe(Submission submission) {
+    public void handleAe(SubmissionEnvelope submissionEnvelope) {
         synchronized (this) {
             this.messagesToAe++;
             System.out.println("AE!");
