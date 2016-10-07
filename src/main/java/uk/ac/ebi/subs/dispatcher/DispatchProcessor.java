@@ -35,7 +35,9 @@ public class DispatchProcessor {
     public void handleSubmissionEvent(SubmissionEnvelope submissionEnvelope) {
         Submission submission = submissionEnvelope.getSubmission();
 
-        logger.info("received submission {}",submission.getId());
+        logger.info("received submission {}, most recent handler was ",
+                submissionEnvelope.getSubmission().getId(),
+                submissionEnvelope.mostRecentHandler());
 
         /*
         * this is a deliberately simple implementation for prototyping
