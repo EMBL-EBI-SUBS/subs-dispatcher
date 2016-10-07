@@ -10,16 +10,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
+import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
+import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
-import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
 
 import java.util.Date;
+
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DispatcherApplication.class)
@@ -40,6 +46,9 @@ public class DispatchProcessorTest {
 
     @Autowired
     MessageConverter messageConverter;
+
+    @Autowired
+    DispatchProcessor dispatchProcessor;
 
     @Before
     public void setUp() {
@@ -77,21 +86,21 @@ public class DispatchProcessorTest {
     @Test
     public void testTheLoop() throws InterruptedException {
         //TODO these messages are received with a null submission in the envelope
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_SUBMITTED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_SUBMITTED, subEnv);
 
 
         sample.setAccession("SAMPLE1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
 
 
         enaStudy.setAccession("ENA1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
 
         aeStudy.setAccession("AE1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
 
 
         Thread.sleep(500);
@@ -102,6 +111,26 @@ public class DispatchProcessorTest {
     }
 
 
+    @Test
+    public void testSupportingSamples() {
+
+        Submission submission = new Submission();
+        SubmissionEnvelope envelope = new SubmissionEnvelope(submission);
+
+        Assay a = new Assay();
+
+        a.getSampleRef().setArchive(Archive.Usi.name());
+        a.getSampleRef().setAlias("bob");
+        a.getSampleRef().setAlias("S1");
+        submission.getAssays().add(a);
+
+        dispatchProcessor.determineSupportingInformationRequired(envelope);
+
+        assertThat("supporting info requirement identified ", envelope.getSupportingSamplesRequired(), hasSize(1));
+        assertThat("supporting info not filled out yet", envelope.getSupportingSamples(), empty());
+
+
+    }
 
 
     @RabbitListener(queues = Queues.ENA_AGENT)
