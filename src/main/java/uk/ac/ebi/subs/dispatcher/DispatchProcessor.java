@@ -12,6 +12,7 @@ import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.AssayRef;
 import uk.ac.ebi.subs.data.component.SampleRef;
+import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Submittable;
@@ -118,25 +119,28 @@ public class DispatchProcessor {
         List<Sample> supportingSamples = submissionEnvelope.getSupportingSamples();
 
         for(Assay assay : assays) {
-            // doesn't have a sample ref, e.g. PRIDE data
-            if (assay.getSampleRef() == null) {
-                continue;
+            for (SampleUse sampleUse : assay.getSampleUses()){
+                SampleRef sampleRef = sampleUse.getSampleRef();
+
+                if (suppportingSamplesRequired.contains(sampleRef)){
+                    //skip the searching steps if the sample ref is already in the sample required set
+                    continue;
+                }
+
+                //is the sample in the submission
+                Sample s = sampleRef.findMatch(samples);
+
+                if (s == null) {
+                    //is the sample already in the supporting information
+                    s = sampleRef.findMatch(supportingSamples);
+                }
+
+                if (s == null) {
+                    // sample referenced is not in the supporting information and is not in the submission, need to fetch it
+                    suppportingSamplesRequired.add(sampleRef);
+                }
+
             }
-
-            //is the sample in the submission
-            Sample s = assay.getSampleRef().findMatch(samples);
-
-            if (s == null) {
-                //is the sample already in the supporting information
-                s = assay.getSampleRef().findMatch(supportingSamples);
-            }
-
-            if (s == null) {
-                // sample referenced is not in the supporting information and is not in the submission, need to fetch it
-                suppportingSamplesRequired.add(assay.getSampleRef());
-            }
-
-
         }
     }
 }

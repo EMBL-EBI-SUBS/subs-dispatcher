@@ -13,6 +13,8 @@ import uk.ac.ebi.subs.DispatcherApplication;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
+import uk.ac.ebi.subs.data.component.SampleRef;
+import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
@@ -119,9 +121,13 @@ public class DispatchProcessorTest {
 
         Assay a = new Assay();
 
-        a.getSampleRef().setArchive(Archive.Usi.name());
-        a.getSampleRef().setAlias("bob");
-        a.getSampleRef().setAlias("S1");
+        SampleRef sr = new SampleRef();
+        sr.setArchive(Archive.Usi.name());
+        sr.setAlias("bob");
+        sr.setAlias("S1");
+
+        a.getSampleUses().add(new SampleUse(sr));
+
         submission.getAssays().add(a);
 
         dispatchProcessor.determineSupportingInformationRequired(envelope);
