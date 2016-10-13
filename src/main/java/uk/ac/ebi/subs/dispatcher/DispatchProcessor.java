@@ -60,6 +60,7 @@ public class DispatchProcessor {
 
         /**
          * for now, assume that anything with an accession is dealt with
+         * TODO being accessioned is not the only thing we care about
          */
         long samplesToFetchCount = submissionEnvelope.getSupportingSamplesRequired().size();
         long samplesToAccessionCount = submission.getSamples().stream().filter(s -> (!s.isAccessioned())).count();
@@ -89,22 +90,24 @@ public class DispatchProcessor {
             }
         }
 
-        String targetQueue = null;
+        String targetTopic = null;
 
         if (samplesToFetchCount > 0){
-            targetQueue = Topics.SAMPLES_PROCESSING; //TODO could break this out into a separate topic
+            targetTopic = Topics.SAMPLES_PROCESSING; //TODO could break this out into a separate topic
         }
-        if (samplesToAccessionCount > 0) {
-            targetQueue = Topics.SAMPLES_PROCESSING;
-        } else if (enaCount > 0) {
-            targetQueue = Topics.ENA_PROCESSING;
-        } else if (arrayExpressCount > 0) {
-            targetQueue = Topics.AE_PROCESSING;
+        else if (samplesToAccessionCount > 0) {
+            targetTopic = Topics.SAMPLES_PROCESSING;
+        }
+        else if (enaCount > 0) {
+            targetTopic = Topics.ENA_PROCESSING;
+        }
+        else if (arrayExpressCount > 0) {
+            targetTopic = Topics.AE_PROCESSING;
         }
 
-        if (targetQueue != null) {
-            rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,targetQueue, submissionEnvelope);
-            logger.info("sent submission {} to {}",submission.getId(),targetQueue);
+        if (targetTopic != null) {
+            rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,targetTopic, submissionEnvelope);
+            logger.info("sent submission {} to {}",submission.getId(),targetTopic);
         }
         else {
             logger.info("completed submission {}",submission.getId());
