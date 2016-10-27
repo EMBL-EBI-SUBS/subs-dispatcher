@@ -39,6 +39,20 @@ public class DispatchProcessor {
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
     }
 
+    @RabbitListener(queues = Queues.SUBMISSION_SUPPORTING_INFO)
+    public void checkSupportingInformationRequirements(SubmissionEnvelope submissionEnvelope){
+        determineSupportingInformationRequired(submissionEnvelope);
+
+        if (!submissionEnvelope.getSupportingSamplesRequired().isEmpty()){
+            //TODO refactor this to use a smaller object
+            rabbitMessagingTemplate.convertAndSend(
+                    Exchanges.SUBMISSIONS,
+                    Topics.EVENT_SUBMISSION_NEEDS_SAMPLES,
+                    submissionEnvelope
+            );
+        }
+    }
+
     @RabbitListener(queues = Queues.SUBMISSION_DISPATCHER)
     public void handleSubmissionEvent(SubmissionEnvelope submissionEnvelope) {
         Submission submission = submissionEnvelope.getSubmission();
@@ -46,11 +60,6 @@ public class DispatchProcessor {
         logger.info("received submission {}, most recent handler was {}",
                 submissionEnvelope.getSubmission().getId(),
                 submissionEnvelope.mostRecentHandler());
-
-
-        determineSupportingInformationRequired(submissionEnvelope);
-
-
 
         /*
         * this is a deliberately simple implementation for prototyping
@@ -62,7 +71,6 @@ public class DispatchProcessor {
          * for now, assume that anything with an accession is dealt with
          * TODO being accessioned is not the only thing we care about
          */
-        long samplesToFetchCount = submissionEnvelope.getSupportingSamplesRequired().size();
         long samplesToAccessionCount = submission.getSamples().stream().filter(s -> (!s.isAccessioned())).count();
         int enaCount = 0;
         int arrayExpressCount = 0;
@@ -92,10 +100,7 @@ public class DispatchProcessor {
 
         String targetTopic = null;
 
-        if (samplesToFetchCount > 0){
-            targetTopic = Topics.SAMPLES_PROCESSING; //TODO could break this out into a separate topic
-        }
-        else if (samplesToAccessionCount > 0) {
+        if (samplesToAccessionCount > 0) {
             targetTopic = Topics.SAMPLES_PROCESSING;
         }
         else if (enaCount > 0) {
