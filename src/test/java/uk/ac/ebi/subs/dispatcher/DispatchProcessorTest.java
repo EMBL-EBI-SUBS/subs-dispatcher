@@ -93,16 +93,16 @@ public class DispatchProcessorTest {
 
         sample.setAccession("SAMPLE1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_AGENT_RESULTS, subEnv);
 
 
         enaStudy.setAccession("ENA1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_AGENT_RESULTS, subEnv);
 
         aeStudy.setAccession("AE1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_AGENT_RESULTS, subEnv);
 
 
         Thread.sleep(500);
