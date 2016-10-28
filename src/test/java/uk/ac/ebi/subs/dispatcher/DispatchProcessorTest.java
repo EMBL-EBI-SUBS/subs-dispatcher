@@ -11,7 +11,7 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.SubmissionEnvelope;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
@@ -26,7 +26,6 @@ import java.util.Date;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
