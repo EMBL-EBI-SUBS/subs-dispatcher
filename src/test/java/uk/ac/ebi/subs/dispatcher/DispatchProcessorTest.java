@@ -37,11 +37,13 @@ public class DispatchProcessorTest {
     int messagesToBioSamples = 0;
     int messagesToAe = 0;
 
+
     SubmissionEnvelope subEnv;
     Submission sub;
     Sample sample;
     Study enaStudy;
     Study aeStudy;
+
 
     @Autowired
     RabbitMessagingTemplate rabbitMessagingTemplate;
@@ -67,16 +69,19 @@ public class DispatchProcessorTest {
         sub.setSubmissionDate(new Date());
 
         sample = new Sample();
+        sample.setId("1");
         sample.setArchive(Archive.Usi);
 
         sub.getSamples().add(sample);
 
         enaStudy = new Study();
+        enaStudy.setId("2");
         enaStudy.setArchive(Archive.Ena);
 
         sub.getStudies().add(enaStudy);
 
         aeStudy = new Study();
+        aeStudy.setId("3");
         aeStudy.setArchive(Archive.ArrayExpress);
 
         sub.getStudies().add(aeStudy);
@@ -91,18 +96,19 @@ public class DispatchProcessorTest {
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_SUBMITTED, subEnv);
 
 
+
         sample.setAccession("SAMPLE1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_AGENT_RESULTS, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
 
         enaStudy.setAccession("ENA1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_AGENT_RESULTS, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
         aeStudy.setAccession("AE1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_AGENT_RESULTS, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
 
         Thread.sleep(500);
