@@ -7,10 +7,8 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.processing.ProcessingStatus;
-import uk.ac.ebi.subs.processing.SubmissionEnvelope;
-import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
@@ -19,9 +17,10 @@ import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
+import uk.ac.ebi.subs.processing.ProcessingStatus;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Service
@@ -69,9 +68,9 @@ public class DispatchProcessor {
          * for now, assume that anything with an accession is dealt with
          * TODO being accessioned is not the only thing we care about
          */
-        long samplesToAccessionCount = submission.getSamples().stream().filter(s -> (!s.isAccessioned())).count();
-        int enaCount = 0;
-        int arrayExpressCount = 0;
+
+        Map<Archive,Boolean> archiveProcessingRequired = new HashMap<>();
+        Arrays.asList(Archive.values()).forEach(a -> archiveProcessingRequired.put(a,false));
 
         for (Submittable submittable : submission.allSubmissionItems()) {
             if (submittable.isAccessioned() ||
@@ -82,31 +81,19 @@ public class DispatchProcessor {
             }
 
             Archive archive = submittable.getArchive();
-            if (archive == null){
-                archive = Archive.Usi; //default
-            }
+            archiveProcessingRequired.put(archive,true);
 
-            switch (archive) {
-                case ArrayExpress:
-                    arrayExpressCount++;
-                    break;
-                case Ena:
-                    enaCount++;
-                    break;
-                default:
-                    break;
-            }
         }
 
         String targetTopic = null;
 
-        if (samplesToAccessionCount > 0) {
+        if (archiveProcessingRequired.get(Archive.BioSamples)) {
             targetTopic = Topics.SAMPLES_PROCESSING;
         }
-        else if (enaCount > 0) {
+        else if (archiveProcessingRequired.get(Archive.Ena)) {
             targetTopic = Topics.ENA_PROCESSING;
         }
-        else if (arrayExpressCount > 0) {
+        else if (archiveProcessingRequired.get(Archive.ArrayExpress)) {
             targetTopic = Topics.AE_PROCESSING;
         }
 
@@ -115,7 +102,7 @@ public class DispatchProcessor {
             logger.info("sent submission {} to {}",submission.getId(),targetTopic);
         }
         else {
-            logger.info("completed submission {}",submission.getId());
+            logger.info("no work to do on submission {}",submission.getId());
         }
     }
 
