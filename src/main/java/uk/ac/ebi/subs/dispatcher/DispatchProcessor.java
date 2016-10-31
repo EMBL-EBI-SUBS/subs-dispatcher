@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.subs.processing.ProcessingStatus;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.Submission;
@@ -74,7 +75,9 @@ public class DispatchProcessor {
 
         for (Submittable submittable : submission.allSubmissionItems()) {
             if (submittable.isAccessioned() ||
-                    (submittable.getStatus() != null && submittable.getStatus().equals("processed"))) {
+                    (submittable.getStatus() != null && submittable.getStatus().equalsIgnoreCase(ProcessingStatus.Processed.name()) ) ||
+                    (submittable.getStatus() != null && submittable.getStatus().equals(ProcessingStatus.Curation.name()))
+                    ) {
                 continue;
             }
 
