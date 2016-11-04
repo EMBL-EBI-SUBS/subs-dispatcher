@@ -17,6 +17,7 @@ import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
+import uk.ac.ebi.subs.processing.Certificate;
 import uk.ac.ebi.subs.processing.ProcessingStatus;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 
@@ -38,10 +39,10 @@ public class DispatchProcessor {
     }
 
     @RabbitListener(queues = Queues.SUBMISSION_SUPPORTING_INFO)
-    public void checkSupportingInformationRequirements(SubmissionEnvelope submissionEnvelope){
+    public void checkSupportingInformationRequirements(SubmissionEnvelope submissionEnvelope) {
         determineSupportingInformationRequired(submissionEnvelope);
 
-        if (!submissionEnvelope.getSupportingSamplesRequired().isEmpty()){
+        if (!submissionEnvelope.getSupportingSamplesRequired().isEmpty()) {
             //TODO refactor this to use a smaller object
             rabbitMessagingTemplate.convertAndSend(
                     Exchanges.SUBMISSIONS,
@@ -69,19 +70,24 @@ public class DispatchProcessor {
          * TODO being accessioned is not the only thing we care about
          */
 
-        Map<Archive,Boolean> archiveProcessingRequired = new HashMap<>();
-        Arrays.asList(Archive.values()).forEach(a -> archiveProcessingRequired.put(a,false));
+        Map<Archive, Boolean> archiveProcessingRequired = new HashMap<>();
+        Arrays.asList(Archive.values()).forEach(a -> archiveProcessingRequired.put(a, false));
+        boolean allSubmittablesProcessed = true;
 
         for (Submittable submittable : submission.allSubmissionItems()) {
-            if (submittable.isAccessioned() ||
-                    (submittable.getStatus() != null && submittable.getStatus().equalsIgnoreCase(ProcessingStatus.Processed.name()) ) ||
-                    (submittable.getStatus() != null && submittable.getStatus().equals(ProcessingStatus.Curation.name()))
+            if (submittable.getStatus() == null || !submittable.getStatus().equals(ProcessingStatus.Processed.name())) {
+                allSubmittablesProcessed = false;
+            }
+
+            if (
+                    (submittable.getStatus() != null && submittable.getStatus().equalsIgnoreCase(ProcessingStatus.Processed.name())) ||
+                            (submittable.getStatus() != null && submittable.getStatus().equals(ProcessingStatus.Curation.name()))
                     ) {
                 continue;
             }
 
             Archive archive = submittable.getArchive();
-            archiveProcessingRequired.put(archive,true);
+            archiveProcessingRequired.put(archive, true);
 
         }
 
@@ -89,35 +95,44 @@ public class DispatchProcessor {
 
         if (archiveProcessingRequired.get(Archive.BioSamples)) {
             targetTopic = Topics.SAMPLES_PROCESSING;
-        }
-        else if (archiveProcessingRequired.get(Archive.Ena)) {
+        } else if (archiveProcessingRequired.get(Archive.Ena)) {
             targetTopic = Topics.ENA_PROCESSING;
-        }
-        else if (archiveProcessingRequired.get(Archive.ArrayExpress)) {
+        } else if (archiveProcessingRequired.get(Archive.ArrayExpress)) {
             targetTopic = Topics.AE_PROCESSING;
         }
 
         if (targetTopic != null) {
-            rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,targetTopic, submissionEnvelope);
-            logger.info("sent submission {} to {}",submission.getId(),targetTopic);
+            rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, targetTopic, submissionEnvelope);
+            logger.info("sent submission {} to {}", submission.getId(), targetTopic);
+        } else {
+            logger.info("no work to do on submission {}", submission.getId());
         }
-        else {
-            logger.info("no work to do on submission {}",submission.getId());
+
+        if (allSubmittablesProcessed) {
+            Certificate cert = new Certificate();
+            cert.setUUID(submission.getId());
+            cert.setProcessingStatus(ProcessingStatus.Processed);
+
+            rabbitMessagingTemplate.convertAndSend(
+                    Exchanges.SUBMISSIONS,
+                    Topics.EVENT_SUBMISSION_STATUS_CHANGE,
+                    cert);
         }
+
     }
 
 
-    void determineSupportingInformationRequired(SubmissionEnvelope submissionEnvelope){
+    void determineSupportingInformationRequired(SubmissionEnvelope submissionEnvelope) {
         List<Sample> samples = submissionEnvelope.getSubmission().getSamples();
         List<Assay> assays = submissionEnvelope.getSubmission().getAssays();
         Set<SampleRef> suppportingSamplesRequired = submissionEnvelope.getSupportingSamplesRequired();
         List<Sample> supportingSamples = submissionEnvelope.getSupportingSamples();
 
-        for(Assay assay : assays) {
-            for (SampleUse sampleUse : assay.getSampleUses()){
+        for (Assay assay : assays) {
+            for (SampleUse sampleUse : assay.getSampleUses()) {
                 SampleRef sampleRef = sampleUse.getSampleRef();
 
-                if (suppportingSamplesRequired.contains(sampleRef)){
+                if (suppportingSamplesRequired.contains(sampleRef)) {
                     //skip the searching steps if the sample ref is already in the sample required set
                     continue;
                 }
