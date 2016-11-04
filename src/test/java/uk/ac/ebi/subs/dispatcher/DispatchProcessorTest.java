@@ -11,6 +11,7 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
 import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.processing.ProcessingStatus;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
@@ -69,7 +70,7 @@ public class DispatchProcessorTest {
 
         sample = new Sample();
         sample.setId("1");
-        sample.setArchive(Archive.Usi);
+        sample.setArchive(Archive.BioSamples);
 
         sub.getSamples().add(sample);
 
@@ -97,15 +98,18 @@ public class DispatchProcessorTest {
 
 
         sample.setAccession("SAMPLE1");
+        sample.setStatus(ProcessingStatus.Processed.name());
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
 
         enaStudy.setAccession("ENA1");
+        enaStudy.setStatus(ProcessingStatus.Processed.name());
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
         aeStudy.setAccession("AE1");
+        aeStudy.setStatus(ProcessingStatus.Processed.name());
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
@@ -127,7 +131,7 @@ public class DispatchProcessorTest {
         Assay a = new Assay();
 
         SampleRef sr = new SampleRef();
-        sr.setArchive(Archive.Usi.name());
+        sr.setArchive(Archive.BioSamples.name());
         sr.setAlias("bob");
         sr.setAlias("S1");
 
