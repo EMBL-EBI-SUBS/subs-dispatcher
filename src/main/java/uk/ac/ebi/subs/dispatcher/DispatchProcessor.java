@@ -7,10 +7,9 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
+import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
-import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.component.AssayRef;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
@@ -20,7 +19,6 @@ import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -67,7 +65,7 @@ public class DispatchProcessor {
         int enaCount = 0;
         int arrayExpressCount = 0;
 
-        for (Submittable submittable : submission.allSubmissionItems()) {
+        for (Submittable submittable : submission.allAccessionableItems()) {
             if (submittable.isAccessioned() ||
                     (submittable.getStatus() != null && submittable.getStatus().equals("processed"))) {
                 continue;
