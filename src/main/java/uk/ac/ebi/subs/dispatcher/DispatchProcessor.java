@@ -17,7 +17,7 @@ import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
-import uk.ac.ebi.subs.processing.Certificate;
+import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.ProcessingStatus;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 
@@ -109,8 +109,8 @@ public class DispatchProcessor {
         }
 
         if (allSubmittablesProcessed) {
-            Certificate cert = new Certificate();
-            cert.setUUID(submission.getId());
+            ProcessingCertificate cert = new ProcessingCertificate();
+            cert.setSubmittableId(submission.getId());
             cert.setProcessingStatus(ProcessingStatus.Processed);
 
             rabbitMessagingTemplate.convertAndSend(
