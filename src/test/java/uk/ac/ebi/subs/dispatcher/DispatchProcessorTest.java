@@ -11,7 +11,8 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.SubmissionEnvelope;
+import uk.ac.ebi.subs.processing.ProcessingStatus;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
@@ -26,7 +27,6 @@ import java.util.Date;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -37,11 +37,13 @@ public class DispatchProcessorTest {
     int messagesToBioSamples = 0;
     int messagesToAe = 0;
 
+
     SubmissionEnvelope subEnv;
     Submission sub;
     Sample sample;
     Study enaStudy;
     Study aeStudy;
+
 
     @Autowired
     RabbitMessagingTemplate rabbitMessagingTemplate;
@@ -67,16 +69,19 @@ public class DispatchProcessorTest {
         sub.setSubmissionDate(new Date());
 
         sample = new Sample();
-        sample.setArchive(Archive.Usi);
+        sample.setId("1");
+        sample.setArchive(Archive.BioSamples);
 
         sub.getSamples().add(sample);
 
         enaStudy = new Study();
+        enaStudy.setId("2");
         enaStudy.setArchive(Archive.Ena);
 
         sub.getStudies().add(enaStudy);
 
         aeStudy = new Study();
+        aeStudy.setId("3");
         aeStudy.setArchive(Archive.ArrayExpress);
 
         sub.getStudies().add(aeStudy);
@@ -91,18 +96,22 @@ public class DispatchProcessorTest {
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_SUBMITTED, subEnv);
 
 
-        sample.setAccession("SAMPLE1");
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
+        sample.setAccession("SAMPLE1");
+        sample.setStatus(ProcessingStatus.Processed.name());
+
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
 
         enaStudy.setAccession("ENA1");
+        enaStudy.setStatus(ProcessingStatus.Processed.name());
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
         aeStudy.setAccession("AE1");
+        aeStudy.setStatus(ProcessingStatus.Processed.name());
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_PROCESSED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
 
         Thread.sleep(500);
@@ -122,7 +131,7 @@ public class DispatchProcessorTest {
         Assay a = new Assay();
 
         SampleRef sr = new SampleRef();
-        sr.setArchive(Archive.Usi.name());
+        sr.setArchive(Archive.BioSamples.name());
         sr.setAlias("bob");
         sr.setAlias("S1");
 

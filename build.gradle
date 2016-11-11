@@ -4,6 +4,7 @@ mainClassName = "uk.ac.ebi.subs.DispatcherApplication"
 
 dependencies {
     compile project(':subs-data-model')
+    compile project(':subs-processing-model')
     compile project(':subs-messaging')
 
     testCompile("junit:junit")
