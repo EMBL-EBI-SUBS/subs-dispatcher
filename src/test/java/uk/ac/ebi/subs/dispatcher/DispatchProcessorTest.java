@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
+import uk.ac.ebi.subs.data.FullSubmission;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.processing.ProcessingStatus;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
@@ -39,7 +40,7 @@ public class DispatchProcessorTest {
 
 
     SubmissionEnvelope subEnv;
-    Submission sub;
+    FullSubmission sub;
     Sample sample;
     Study enaStudy;
     Study aeStudy;
@@ -62,7 +63,7 @@ public class DispatchProcessorTest {
         this.messagesToBioSamples = 0;
         this.messagesToAe = 0;
 
-        sub = new Submission();
+        sub = new FullSubmission();
         sub.setId("DispatchTestSub");
         sub.getSubmitter().setEmail("test@ebi.ac.uk");
         sub.getDomain().setName("testDomain");
@@ -125,7 +126,7 @@ public class DispatchProcessorTest {
     @Test
     public void testSupportingSamples() {
 
-        Submission submission = new Submission();
+        FullSubmission submission = new FullSubmission();
         SubmissionEnvelope envelope = new SubmissionEnvelope(submission);
 
         Assay a = new Assay();
