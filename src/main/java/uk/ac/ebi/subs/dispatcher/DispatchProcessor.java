@@ -7,7 +7,7 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.data.FullSubmission;
+
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
@@ -53,7 +53,7 @@ public class DispatchProcessor {
 
     @RabbitListener(queues = Queues.SUBMISSION_DISPATCHER)
     public void handleSubmissionEvent(SubmissionEnvelope submissionEnvelope) {
-        FullSubmission submission = submissionEnvelope.getSubmission();
+        Submission submission = submissionEnvelope.getSubmission();
 
         logger.info("received submission {}",
                 submissionEnvelope.getSubmission().getId());
