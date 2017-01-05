@@ -13,7 +13,7 @@ import uk.ac.ebi.subs.DispatcherApplication;
 
 import uk.ac.ebi.subs.data.FullSubmission;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.processing.ProcessingStatus;
+import uk.ac.ebi.subs.data.status.ProcessingStatus;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
@@ -100,18 +100,18 @@ public class DispatchProcessorTest {
 
 
         sample.setAccession("SAMPLE1");
-        sample.setStatus(ProcessingStatus.Processed.name());
+        sample.setStatus(ProcessingStatus.Done.name());
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
 
         enaStudy.setAccession("ENA1");
-        enaStudy.setStatus(ProcessingStatus.Processed.name());
+        enaStudy.setStatus(ProcessingStatus.Done.name());
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
         aeStudy.setAccession("AE1");
-        aeStudy.setStatus(ProcessingStatus.Processed.name());
+        aeStudy.setStatus(ProcessingStatus.Done.name());
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 

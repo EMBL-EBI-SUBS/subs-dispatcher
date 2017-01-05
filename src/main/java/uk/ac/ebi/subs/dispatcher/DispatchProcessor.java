@@ -20,7 +20,7 @@ import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
 import uk.ac.ebi.subs.processing.ProcessingCertificate;
-import uk.ac.ebi.subs.processing.ProcessingStatus;
+import uk.ac.ebi.subs.data.status.ProcessingStatus;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 
 import java.util.*;
@@ -75,12 +75,12 @@ public class DispatchProcessor {
         boolean allSubmittablesProcessed = true;
 
         for (Submittable submittable : submission.allSubmissionItems()) {
-            if (submittable.getStatus() == null || !submittable.getStatus().equals(ProcessingStatus.Processed.name())) {
+            if (submittable.getStatus() == null || !submittable.getStatus().equals(ProcessingStatus.Done.name())) {
                 allSubmittablesProcessed = false;
             }
 
             if (
-                    (submittable.getStatus() != null && submittable.getStatus().equalsIgnoreCase(ProcessingStatus.Processed.name())) ||
+                    (submittable.getStatus() != null && submittable.getStatus().equalsIgnoreCase(ProcessingStatus.Done.name())) ||
                             (submittable.getStatus() != null && submittable.getStatus().equals(ProcessingStatus.Curation.name()))
                     ) {
                 continue;
@@ -111,7 +111,7 @@ public class DispatchProcessor {
         if (allSubmittablesProcessed) {
             ProcessingCertificate cert = new ProcessingCertificate();
             cert.setSubmittableId(submission.getId());
-            cert.setProcessingStatus(ProcessingStatus.Processed);
+            cert.setProcessingStatus(ProcessingStatus.Done);
 
             rabbitMessagingTemplate.convertAndSend(
                     Exchanges.SUBMISSIONS,
