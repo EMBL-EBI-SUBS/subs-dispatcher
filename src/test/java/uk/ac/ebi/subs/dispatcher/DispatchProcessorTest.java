@@ -100,18 +100,18 @@ public class DispatchProcessorTest {
 
 
         sample.setAccession("SAMPLE1");
-        sample.setStatus(ProcessingStatus.Done.name());
+        sample.setStatus(ProcessingStatus.Done);
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
 
         enaStudy.setAccession("ENA1");
-        enaStudy.setStatus(ProcessingStatus.Done.name());
+        enaStudy.setStatus(ProcessingStatus.Done);
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
         aeStudy.setAccession("AE1");
-        aeStudy.setStatus(ProcessingStatus.Done.name());
+        aeStudy.setStatus(ProcessingStatus.Done);
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
