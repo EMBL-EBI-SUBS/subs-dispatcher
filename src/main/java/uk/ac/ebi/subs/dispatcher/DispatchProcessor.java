@@ -7,12 +7,13 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
-
 import uk.ac.ebi.subs.data.FullSubmission;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
+import uk.ac.ebi.subs.data.status.ProcessingStatus;
+import uk.ac.ebi.subs.data.status.SubmissionStatus;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Submittable;
@@ -20,8 +21,9 @@ import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
 import uk.ac.ebi.subs.processing.ProcessingCertificate;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
+import uk.ac.ebi.subs.repository.FullSubmissionService;
+import uk.ac.ebi.subs.repository.SubmissionRepository;
 
 import java.util.*;
 
@@ -33,17 +35,58 @@ public class DispatchProcessor {
     RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Autowired
-    public DispatchProcessor(RabbitMessagingTemplate rabbitMessagingTemplate, MessageConverter messageConverter) {
+    FullSubmissionService fullSubmissionService;
+
+    @Autowired
+    SubmissionRepository submissionRepository;
+
+    @Autowired
+    public DispatchProcessor(
+            RabbitMessagingTemplate rabbitMessagingTemplate,
+            MessageConverter messageConverter
+    ) {
         this.rabbitMessagingTemplate = rabbitMessagingTemplate;
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
     }
 
-    @RabbitListener(queues = Queues.SUBMISSION_SUPPORTING_INFO)
-    public void checkSupportingInformationRequirements(SubmissionEnvelope submissionEnvelope) {
+    /**
+     * Submissions being submitted by a user causes a Submission message to be sent,
+     * but downstream work needs a FullSubmission in a SubmissionEnvelope, so transform and resend
+     *
+     * @param submission
+     */
+    @RabbitListener(queues = Queues.SUBMISSION_SUBMITTED_DO_DISPATCH)
+    public void onSubmissionDoDispatch(Submission submission) {
+        logger.info("onSubmissionDoDispatch {}", submission);
+        FullSubmission fullSubmission = fullSubmissionService.fetchOne(submission.getId());
+
+        SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(fullSubmission);
+
+        Submission refreshedSubmission = new Submission(fullSubmission);
+        refreshedSubmission.setStatus(SubmissionStatus.Processing);
+        refreshedSubmission.setSubmissionDate(submission.getSubmissionDate());
+        submissionRepository.save(refreshedSubmission);
+
+
+        rabbitMessagingTemplate.convertAndSend(
+                Exchanges.SUBMISSIONS,
+                Topics.EVENT_SUBMISSION_UPDATED,
+                submissionEnvelope
+        );
+
+    }
+
+    @RabbitListener(queues = Queues.SUBMISSION_SUBMITTED_CHECK_SUPPORTING_INFO)
+    public void onSubmissionCheckSupportingInfoRequirement(Submission submission) {
+        logger.info("onSubmissionCheckSupportingInfoRequirement {}", submission);
+        FullSubmission fullSubmission = fullSubmissionService.fetchOne(submission.getId());
+
+        SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(fullSubmission);
+
         determineSupportingInformationRequired(submissionEnvelope);
 
         if (!submissionEnvelope.getSupportingSamplesRequired().isEmpty()) {
-            //TODO refactor this to use a smaller object
+            //TODO refactor this to use a smaller object?
             rabbitMessagingTemplate.convertAndSend(
                     Exchanges.SUBMISSIONS,
                     Topics.EVENT_SUBMISSION_NEEDS_SAMPLES,
@@ -54,6 +97,7 @@ public class DispatchProcessor {
 
     @RabbitListener(queues = Queues.SUBMISSION_DISPATCHER)
     public void handleSubmissionEvent(SubmissionEnvelope submissionEnvelope) {
+        logger.info("handleSubmissionEvent {}", submissionEnvelope);
         FullSubmission submission = submissionEnvelope.getSubmission();
 
         logger.info("received submission {}",

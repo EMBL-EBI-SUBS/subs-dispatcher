@@ -95,7 +95,7 @@ public class DispatchProcessorTest {
     @Test
     public void testTheLoop() throws InterruptedException {
         //TODO these messages are received with a null submission in the envelope
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_SUBMITTED, subEnv);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_SUBMITTED, subEnv.getSubmission());
 
 
 
