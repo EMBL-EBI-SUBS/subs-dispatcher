@@ -14,9 +14,7 @@ import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.status.ProcessingStatus;
 import uk.ac.ebi.subs.data.status.SubmissionStatus;
-import uk.ac.ebi.subs.data.submittable.Assay;
-import uk.ac.ebi.subs.data.submittable.Sample;
-import uk.ac.ebi.subs.data.submittable.Submittable;
+import uk.ac.ebi.subs.data.submittable.*;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
@@ -24,6 +22,7 @@ import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.FullSubmissionService;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.submittable.SubmittablesBulkOperations;
 
 import java.util.*;
 
@@ -39,6 +38,9 @@ public class DispatchProcessor {
 
     @Autowired
     SubmissionRepository submissionRepository;
+
+    @Autowired
+    SubmittablesBulkOperations submittablesBulkOperations;
 
     @Autowired
     public DispatchProcessor(
@@ -93,6 +95,34 @@ public class DispatchProcessor {
                     submissionEnvelope
             );
         }
+    }
+
+    @RabbitListener(queues = Queues.SUBMISSION_SUBMITTED_MARK_SUBMITTABLES)
+    public void onSubmissionMarkSubmittablesSubmitted(Submission submission) {
+
+        List<Class> submittablesClasses = Arrays.asList(
+                Analysis.class,
+                Assay.class,
+                AssayData.class,
+                EgaDac.class,
+                EgaDacPolicy.class,
+                EgaDataset.class,
+                Project.class,
+                Protocol.class,
+                Sample.class,
+                SampleGroup.class,
+                Study.class
+        );
+
+        for(Class submittableClass : submittablesClasses){
+            submittablesBulkOperations.updateProcessingStatusBySubmissionId(
+                    submission.getId(),
+                    ProcessingStatus.Submitted,
+                    ProcessingStatus.Draft,
+                    submittableClass
+            );
+        }
+
     }
 
     @RabbitListener(queues = Queues.SUBMISSION_DISPATCHER)
