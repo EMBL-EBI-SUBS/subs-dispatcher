@@ -34,6 +34,9 @@ public class DispatchProcessor {
     RabbitMessagingTemplate rabbitMessagingTemplate;
 
     @Autowired
+    List<Class> submittablesClassList;
+
+    @Autowired
     FullSubmissionService fullSubmissionService;
 
     @Autowired
@@ -100,21 +103,7 @@ public class DispatchProcessor {
     @RabbitListener(queues = Queues.SUBMISSION_SUBMITTED_MARK_SUBMITTABLES)
     public void onSubmissionMarkSubmittablesSubmitted(Submission submission) {
 
-        List<Class> submittablesClasses = Arrays.asList(
-                Analysis.class,
-                Assay.class,
-                AssayData.class,
-                EgaDac.class,
-                EgaDacPolicy.class,
-                EgaDataset.class,
-                Project.class,
-                Protocol.class,
-                Sample.class,
-                SampleGroup.class,
-                Study.class
-        );
-
-        for(Class submittableClass : submittablesClasses){
+        for(Class submittableClass : submittablesClassList){
             submittablesBulkOperations.updateProcessingStatusBySubmissionId(
                     submission.getId(),
                     ProcessingStatus.Submitted,
