@@ -22,6 +22,7 @@ import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.FullSubmissionService;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.submittable.SampleRepository;
 import uk.ac.ebi.subs.repository.submittable.SubmittablesBulkOperations;
 
 import java.util.*;
@@ -108,6 +109,18 @@ public class DispatchProcessor {
                     submission.getId(),
                     ProcessingStatus.Submitted,
                     ProcessingStatus.Draft,
+                    submittableClass
+            );
+        }
+
+    }
+
+    @RabbitListener(queues = Queues.SUBMISSION_DELETED_CLEANUP_CONTENTS)
+    public void onDeletionCleanupContents(Submission submission) {
+
+        for(Class submittableClass : submittablesClassList){
+            submittablesBulkOperations.deleteSubmissionContents(
+                    submission.getId(),
                     submittableClass
             );
         }
