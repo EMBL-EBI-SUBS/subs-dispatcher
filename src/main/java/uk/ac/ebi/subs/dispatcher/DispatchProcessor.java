@@ -12,6 +12,7 @@ import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
+import uk.ac.ebi.subs.data.core.Submittable;
 import uk.ac.ebi.subs.data.status.ProcessingStatus;
 import uk.ac.ebi.subs.data.status.SubmissionStatus;
 import uk.ac.ebi.subs.data.submittable.*;
@@ -22,8 +23,7 @@ import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.FullSubmissionService;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
-import uk.ac.ebi.subs.repository.submittable.SampleRepository;
-import uk.ac.ebi.subs.repository.submittable.SubmittablesBulkOperations;
+import uk.ac.ebi.subs.repository.repos.SubmittablesBulkOperations;
 
 import java.util.*;
 
