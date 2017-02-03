@@ -69,7 +69,7 @@ public class DispatchProcessor {
 
         SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(fullSubmission);
 
-        Submission refreshedSubmission = new Submission(fullSubmission);
+        Submission refreshedSubmission = submissionRepository.findOne(submission.getId());
         refreshedSubmission.setStatus(SubmissionStatus.Processing);
         refreshedSubmission.setSubmissionDate(submission.getSubmissionDate());
         submissionRepository.save(refreshedSubmission);
