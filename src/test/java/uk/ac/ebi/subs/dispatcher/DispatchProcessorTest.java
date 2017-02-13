@@ -3,6 +3,7 @@ package uk.ac.ebi.subs.dispatcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
@@ -11,22 +12,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
-
+import uk.ac.ebi.subs.RabbitMQDependentTest;
 import uk.ac.ebi.subs.data.FullSubmission;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
-import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
+import uk.ac.ebi.subs.data.status.ProcessingStatus;
+import uk.ac.ebi.subs.messaging.Exchanges;
+import uk.ac.ebi.subs.messaging.Queues;
+import uk.ac.ebi.subs.messaging.Topics;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.FullSubmissionService;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.Study;
-import uk.ac.ebi.subs.messaging.Exchanges;
-import uk.ac.ebi.subs.messaging.Queues;
-import uk.ac.ebi.subs.messaging.Topics;
 import uk.ac.ebi.subs.repository.repos.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.StudyRepository;
 
@@ -52,9 +53,12 @@ public class DispatchProcessorTest {
     Study enaStudy;
     Study aeStudy;
 
-    @Autowired SubmissionRepository submissionRepository;
-    @Autowired SampleRepository sampleRepository;
-    @Autowired StudyRepository studyRepository;
+    @Autowired
+    SubmissionRepository submissionRepository;
+    @Autowired
+    SampleRepository sampleRepository;
+    @Autowired
+    StudyRepository studyRepository;
 
     @Autowired
     FullSubmissionService fullSubmissionService;
@@ -69,7 +73,7 @@ public class DispatchProcessorTest {
     DispatchProcessor dispatchProcessor;
 
     @After
-    public void clearDatabase(){
+    public void clearDatabase() {
         submissionRepository.deleteAll();
         sampleRepository.deleteAll();
         studyRepository.deleteAll();
@@ -122,10 +126,10 @@ public class DispatchProcessorTest {
     }
 
     @Test
+    @Category(RabbitMQDependentTest.class)
     public void testTheLoop() throws InterruptedException {
         //TODO these messages are received with a null submission in the envelope
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_SUBMITTED, subEnv.getSubmission());
-
 
 
         sample.setAccession("SAMPLE1");
