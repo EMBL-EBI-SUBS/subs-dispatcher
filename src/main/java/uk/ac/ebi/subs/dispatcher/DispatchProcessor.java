@@ -12,11 +12,11 @@ import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
+import uk.ac.ebi.subs.data.status.ProcessingStatus;
+import uk.ac.ebi.subs.data.status.SubmissionStatus;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Submittable;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
@@ -105,7 +105,7 @@ public class DispatchProcessor {
     @RabbitListener(queues = Queues.SUBMISSION_SUBMITTED_MARK_SUBMITTABLES)
     public void onSubmissionMarkSubmittablesSubmitted(Submission submission) {
 
-        for(Class submittableClass : submittablesClassList){
+        for (Class submittableClass : submittablesClassList) {
             submittablesBulkOperations.updateProcessingStatusBySubmissionId(
                     submission.getId(),
                     ProcessingStatus.Submitted,
@@ -119,7 +119,7 @@ public class DispatchProcessor {
     @RabbitListener(queues = Queues.SUBMISSION_DELETED_CLEANUP_CONTENTS)
     public void onDeletionCleanupContents(Submission submission) {
 
-        for(Class submittableClass : submittablesClassList){
+        for (Class submittableClass : submittablesClassList) {
             submittablesBulkOperations.deleteSubmissionContents(
                     submission.getId(),
                     submittableClass
