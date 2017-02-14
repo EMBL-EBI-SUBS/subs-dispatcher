@@ -18,7 +18,7 @@ import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
@@ -133,18 +133,18 @@ public class DispatchProcessorTest {
 
 
         sample.setAccession("SAMPLE1");
-        sample.setStatus(ProcessingStatus.Done);
+        sample.setStatus(ProcessingStatusEnum.Done);
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
 
         enaStudy.setAccession("ENA1");
-        enaStudy.setStatus(ProcessingStatus.Done);
+        enaStudy.setStatus(ProcessingStatusEnum.Done);
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 
         aeStudy.setAccession("AE1");
-        aeStudy.setStatus(ProcessingStatus.Done);
+        aeStudy.setStatus(ProcessingStatusEnum.Done);
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, Topics.EVENT_SUBMISSION_UPDATED, subEnv);
 

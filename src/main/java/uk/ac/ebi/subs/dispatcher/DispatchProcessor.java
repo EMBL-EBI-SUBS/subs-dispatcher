@@ -12,8 +12,8 @@ import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
-import uk.ac.ebi.subs.data.status.SubmissionStatus;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Submittable;
@@ -24,6 +24,8 @@ import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.FullSubmissionService;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.SubmittablesBulkOperations;
 
 import java.util.*;
@@ -48,6 +50,9 @@ public class DispatchProcessor {
     SubmittablesBulkOperations submittablesBulkOperations;
 
     @Autowired
+    SubmissionStatusRepository submissionStatusRepository;
+
+    @Autowired
     public DispatchProcessor(
             RabbitMessagingTemplate rabbitMessagingTemplate,
             MessageConverter messageConverter
@@ -70,7 +75,7 @@ public class DispatchProcessor {
         SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(fullSubmission);
 
         Submission refreshedSubmission = submissionRepository.findOne(submission.getId());
-        refreshedSubmission.setStatus(SubmissionStatus.Processing);
+//TODO fix in SUBS-333        refreshedSubmission.setStatus(SubmissionStatusEnum.Processing);
         refreshedSubmission.setSubmissionDate(submission.getSubmissionDate());
         submissionRepository.save(refreshedSubmission);
 
@@ -108,8 +113,8 @@ public class DispatchProcessor {
         for (Class submittableClass : submittablesClassList) {
             submittablesBulkOperations.updateProcessingStatusBySubmissionId(
                     submission.getId(),
-                    ProcessingStatus.Submitted,
-                    ProcessingStatus.Draft,
+                    ProcessingStatusEnum.Submitted,
+                    ProcessingStatusEnum.Draft,
                     submittableClass
             );
         }
@@ -125,6 +130,9 @@ public class DispatchProcessor {
                     submittableClass
             );
         }
+
+        submissionStatusRepository.deleteBySubmissionId(submission.getId());
+
 
     }
 
@@ -152,13 +160,13 @@ public class DispatchProcessor {
         boolean allSubmittablesProcessed = true;
 
         for (Submittable submittable : submission.allSubmissionItems()) {
-            if (submittable.getStatus() == null || !submittable.getStatus().equals(ProcessingStatus.Done.name())) {
+            if (submittable.getStatus() == null || !submittable.getStatus().equals(ProcessingStatusEnum.Done.name())) {
                 allSubmittablesProcessed = false;
             }
 
             if (
-                    (submittable.getStatus() != null && submittable.getStatus().equalsIgnoreCase(ProcessingStatus.Done.name())) ||
-                            (submittable.getStatus() != null && submittable.getStatus().equals(ProcessingStatus.Curation.name()))
+                    (submittable.getStatus() != null && submittable.getStatus().equalsIgnoreCase(ProcessingStatusEnum.Done.name())) ||
+                            (submittable.getStatus() != null && submittable.getStatus().equals(ProcessingStatusEnum.Curation.name()))
                     ) {
                 continue;
             }
@@ -188,7 +196,7 @@ public class DispatchProcessor {
         if (allSubmittablesProcessed) {
             ProcessingCertificate cert = new ProcessingCertificate();
             cert.setSubmittableId(submission.getId());
-            cert.setProcessingStatus(ProcessingStatus.Done);
+            cert.setProcessingStatus(ProcessingStatusEnum.Done);
 
             rabbitMessagingTemplate.convertAndSend(
                     Exchanges.SUBMISSIONS,
