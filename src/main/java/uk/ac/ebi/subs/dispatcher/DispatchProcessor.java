@@ -131,7 +131,7 @@ public class DispatchProcessor {
             );
         }
 
-        submissionStatusRepository.deleteBySubmissionId(submission.getId());
+        submissionStatusRepository.delete(submission.getSubmissionStatus());
 
 
     }
