@@ -5,23 +5,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.Repository;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.FullSubmission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
-import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
-import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.FullSubmissionService;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
@@ -46,22 +42,21 @@ public class DispatchProcessor {
     private List<Class> submittablesClassList;
     private FullSubmissionService fullSubmissionService;
     private SubmissionRepository submissionRepository;
-    private SubmittablesBulkOperations submittablesBulkOperations;
     private SubmissionStatusRepository submissionStatusRepository;
     private ProcessingStatusRepository processingStatusRepository;
     private List<SubmittableRepository<?>> submissionContentsRepositories;
+    private Set<String> processingStatusesToAllow;
 
     @Autowired
     public DispatchProcessor(
             RabbitMessagingTemplate rabbitMessagingTemplate,
             MessageConverter messageConverter,
-
             FullSubmissionService fullSubmissionService,
             SubmissionRepository submissionRepository,
-            SubmittablesBulkOperations submittablesBulkOperations,
             SubmissionStatusRepository submissionStatusRepository,
             ProcessingStatusRepository processingStatusRepository,
-            List<Class> submittablesClassList
+            List<Class> submittablesClassList,
+            List<SubmittableRepository<?>> submissionContentsRepositories
 
     ) {
         this.rabbitMessagingTemplate = rabbitMessagingTemplate;
@@ -69,11 +64,15 @@ public class DispatchProcessor {
 
         this.fullSubmissionService = fullSubmissionService;
         this.submissionRepository = submissionRepository;
-        this.submittablesBulkOperations = submittablesBulkOperations;
         this.submissionStatusRepository = submissionStatusRepository;
 
         this.submittablesClassList = submittablesClassList;
         this.processingStatusRepository = processingStatusRepository;
+        this.submissionContentsRepositories = submissionContentsRepositories;
+
+        processingStatusesToAllow = new HashSet<>();
+        processingStatusesToAllow.add(ProcessingStatusEnum.Draft.name());
+        processingStatusesToAllow.add(ProcessingStatusEnum.Submitted.name());
     }
 
     /**
@@ -91,13 +90,8 @@ public class DispatchProcessor {
 
         Submission refreshedSubmission = submissionRepository.findOne(submission.getId());
 
-
         refreshedSubmission.getSubmissionStatus().setStatus(SubmissionStatusEnum.Processing);
         submissionStatusRepository.save(refreshedSubmission.getSubmissionStatus());
-
-        refreshedSubmission.setSubmissionDate(submission.getSubmissionDate());
-        submissionRepository.save(refreshedSubmission);
-
 
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
@@ -128,27 +122,30 @@ public class DispatchProcessor {
 
     @RabbitListener(queues = Queues.SUBMISSION_SUBMITTED_MARK_SUBMITTABLES)
     public void onSubmissionMarkSubmittablesSubmitted(Submission submission) {
+        logger.info("Marking submittables as submitted for {}",submission.getId());
+        processingStatusRepository
+                .findBySubmissionId(submission.getId())
+                .stream()
+                .filter(processingStatus -> processingStatus.getStatus().equals(ProcessingStatusEnum.Draft.name()))
+                .forEach(processingStatus -> {
+                    processingStatus.setStatus(ProcessingStatusEnum.Submitted);
+                    processingStatusRepository.save(processingStatus);
+                })
+        ;
 
-        for (Class submittableClass : submittablesClassList) {
-            submittablesBulkOperations.updateProcessingStatusBySubmissionId(
-                    submission.getId(),
-                    ProcessingStatusEnum.Submitted,
-                    ProcessingStatusEnum.Draft,
-                    submittableClass
-            );
-        }
 
     }
 
     @RabbitListener(queues = Queues.SUBMISSION_DELETED_CLEANUP_CONTENTS)
     public void onDeletionCleanupContents(Submission submission) {
+//TODO
 
-        for (Class submittableClass : submittablesClassList) {
-            submittablesBulkOperations.deleteSubmissionContents(
-                    submission.getId(),
-                    submittableClass
-            );
+        for (SubmittableRepository<?> repo : submissionContentsRepositories){
+            repo.deleteBySubmissionId(submission.getId());
         }
+
+        processingStatusRepository.deleteBySubmissionId(submission.getId());
+
 
         submissionStatusRepository.delete(submission.getSubmissionStatus());
 
@@ -178,25 +175,32 @@ public class DispatchProcessor {
         Arrays.asList(Archive.values()).forEach(a -> archiveProcessingRequired.put(a, false));
 
 
-        List<StoredSubmittable> itemsToProcess = submissionContentsRepositories
+
+        List<StoredSubmittable> itemsToProcess = new ArrayList<>();
+        submissionContentsRepositories
                 .stream()
                 .flatMap(repo -> repo.findBySubmissionId(submission.getId()).stream())
-                .filter(item -> item.getProcessingStatus().getStatus().equals(ProcessingStatusEnum.Processing))
-                .map(item -> {archiveProcessingRequired.put(item.getArchive(),true); return item;})
-                .collect(Collectors.toList());
+                .filter(item ->
+                        processingStatusesToAllow.contains(item.getProcessingStatus().getStatus())     )
+                .forEach(item -> {
+                    archiveProcessingRequired.put(item.getArchive(), true);
+                    itemsToProcess.add(item);
+                });
+
+
 
         String targetTopic = null;
 
         if (archiveProcessingRequired.get(Archive.BioSamples)) {
             targetTopic = Topics.SAMPLES_PROCESSING;
-            dispatchItems(submissionEnvelope, itemsToProcess, targetTopic, Archive.BioSamples );
+            dispatchItems(submissionEnvelope, itemsToProcess, targetTopic, Archive.BioSamples);
 
         } else if (archiveProcessingRequired.get(Archive.Ena)) {
             targetTopic = Topics.ENA_PROCESSING;
-            dispatchItems(submissionEnvelope, itemsToProcess, targetTopic, Archive.Ena );
+            dispatchItems(submissionEnvelope, itemsToProcess, targetTopic, Archive.Ena);
         } else if (archiveProcessingRequired.get(Archive.ArrayExpress)) {
             targetTopic = Topics.AE_PROCESSING;
-            dispatchItems(submissionEnvelope, itemsToProcess, targetTopic, Archive.ArrayExpress );
+            dispatchItems(submissionEnvelope, itemsToProcess, targetTopic, Archive.ArrayExpress);
         }
 
         if (targetTopic == null) {
@@ -212,16 +216,15 @@ public class DispatchProcessor {
             Archive targetArchive
     ) {
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, targetTopic, submissionEnvelope);
-        logger.info("sent submission {} to {}", submissionEnvelope.getSubmission().getId(), targetTopic,itemsToProcess);
+        logger.info("sent submission {} to {}", submissionEnvelope.getSubmission().getId(), targetTopic, itemsToProcess);
 
         itemsToProcess
                 .stream()
                 .filter(item -> item.getArchive().equals(targetArchive))
-                .filter(item -> item.getProcessingStatus().getStatus().equals(ProcessingStatusEnum.Processing))
-                .map(item -> {
+                .filter(item -> processingStatusesToAllow.contains(item.getProcessingStatus().getStatus()))
+                .forEach(item -> {
                     item.getProcessingStatus().setStatus(ProcessingStatusEnum.Dispatched);
                     processingStatusRepository.save(item.getProcessingStatus());
-                    return item;
                 });
 
     }
