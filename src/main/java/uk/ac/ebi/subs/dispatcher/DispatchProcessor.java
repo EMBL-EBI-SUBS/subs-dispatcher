@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.FullSubmission;
-import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
 import uk.ac.ebi.subs.data.component.SampleUse;
@@ -24,7 +23,7 @@ import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.FullSubmissionService;
 import uk.ac.ebi.subs.repository.SubmissionRepository;
-import uk.ac.ebi.subs.repository.model.SubmissionStatus;
+import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
 import uk.ac.ebi.subs.repository.repos.SubmittablesBulkOperations;
 
@@ -37,28 +36,34 @@ public class DispatchProcessor {
 
     RabbitMessagingTemplate rabbitMessagingTemplate;
 
-    @Autowired
-    List<Class> submittablesClassList;
 
-    @Autowired
-    FullSubmissionService fullSubmissionService;
-
-    @Autowired
-    SubmissionRepository submissionRepository;
-
-    @Autowired
-    SubmittablesBulkOperations submittablesBulkOperations;
-
-    @Autowired
-    SubmissionStatusRepository submissionStatusRepository;
+    private List<Class> submittablesClassList;
+    private FullSubmissionService fullSubmissionService;
+    private SubmissionRepository submissionRepository;
+    private SubmittablesBulkOperations submittablesBulkOperations;
+    private SubmissionStatusRepository submissionStatusRepository;
 
     @Autowired
     public DispatchProcessor(
             RabbitMessagingTemplate rabbitMessagingTemplate,
-            MessageConverter messageConverter
+            MessageConverter messageConverter,
+
+            FullSubmissionService fullSubmissionService,
+            SubmissionRepository submissionRepository,
+            SubmittablesBulkOperations submittablesBulkOperations,
+            SubmissionStatusRepository submissionStatusRepository,
+            List<Class> submittablesClassList
+
     ) {
         this.rabbitMessagingTemplate = rabbitMessagingTemplate;
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
+
+        this.fullSubmissionService = fullSubmissionService;
+        this.submissionRepository = submissionRepository;
+        this.submittablesBulkOperations = submittablesBulkOperations;
+        this.submissionStatusRepository = submissionStatusRepository;
+
+        this.submittablesClassList = submittablesClassList;
     }
 
     /**
@@ -75,7 +80,11 @@ public class DispatchProcessor {
         SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(fullSubmission);
 
         Submission refreshedSubmission = submissionRepository.findOne(submission.getId());
-//TODO fix in SUBS-333        refreshedSubmission.setStatus(SubmissionStatusEnum.Processing);
+
+
+        refreshedSubmission.getSubmissionStatus().setStatus(SubmissionStatusEnum.Processing);
+        submissionStatusRepository.save(refreshedSubmission.getSubmissionStatus());
+
         refreshedSubmission.setSubmissionDate(submission.getSubmissionDate());
         submissionRepository.save(refreshedSubmission);
 
