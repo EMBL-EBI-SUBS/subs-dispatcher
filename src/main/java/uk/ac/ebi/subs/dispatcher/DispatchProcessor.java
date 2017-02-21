@@ -20,16 +20,14 @@ import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.FullSubmissionService;
-import uk.ac.ebi.subs.repository.SubmissionRepository;
+import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
-import uk.ac.ebi.subs.repository.repos.ProcessingStatusRepository;
-import uk.ac.ebi.subs.repository.repos.SubmissionStatusRepository;
-import uk.ac.ebi.subs.repository.repos.SubmittableRepository;
-import uk.ac.ebi.subs.repository.repos.SubmittablesBulkOperations;
+import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
+import uk.ac.ebi.subs.repository.repos.status.SubmissionStatusRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class DispatchProcessor {
