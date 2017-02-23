@@ -37,7 +37,7 @@ public class DispatchProcessor {
     RabbitMessagingTemplate rabbitMessagingTemplate;
 
 
-    private List<Class> submittablesClassList;
+    private List<Class<? extends StoredSubmittable>> submittablesClassList;
     private FullSubmissionService fullSubmissionService;
     private SubmissionRepository submissionRepository;
     private SubmissionStatusRepository submissionStatusRepository;
@@ -45,7 +45,7 @@ public class DispatchProcessor {
     private List<SubmittableRepository<?>> submissionContentsRepositories;
     private Set<String> processingStatusesToAllow;
 
-    @Autowired
+
     public DispatchProcessor(
             RabbitMessagingTemplate rabbitMessagingTemplate,
             MessageConverter messageConverter,
@@ -53,7 +53,7 @@ public class DispatchProcessor {
             SubmissionRepository submissionRepository,
             SubmissionStatusRepository submissionStatusRepository,
             ProcessingStatusRepository processingStatusRepository,
-            List<Class> submittablesClassList,
+            List<Class<? extends StoredSubmittable>> submittablesClassList,
             List<SubmittableRepository<?>> submissionContentsRepositories
 
     ) {
