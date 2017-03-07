@@ -93,7 +93,7 @@ public class DispatchProcessorTest {
         sub = new Submission();
         sub.setId("DispatchTestSub");
         sub.getSubmitter().setEmail("test@ebi.ac.uk");
-        sub.getDomain().setName("testDomain");
+        sub.getTeam().setName("testTeam");
         sub.setSubmissionDate(new Date());
 
         submissionRepository.save(sub);
