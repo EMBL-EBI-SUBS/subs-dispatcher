@@ -130,8 +130,8 @@ public class DispatchProcessor {
                 .filter(item -> item.getProcessingStatus().getStatus().equals(ProcessingStatusEnum.Draft.name()))
                 .forEach(item -> {
                     ProcessingStatus status = item.getProcessingStatus();
-                    status.setAlias(item.getAlias());
-                    status.setArchive(item.getArchive().name());
+                    status.copyDetailsFromSubmittable(item);
+                    status.setStatus(ProcessingStatusEnum.Submitted);
                     processingStatusRepository.save(status);
                 });
 
