@@ -140,21 +140,7 @@ public class DispatchProcessor {
 
     }
 
-    @RabbitListener(queues = Queues.SUBMISSION_DELETED_CLEANUP_CONTENTS)
-    public void onDeletionCleanupContents(Submission submission) {
-//TODO
 
-        for (SubmittableRepository<?> repo : submissionContentsRepositories){
-            repo.deleteBySubmissionId(submission.getId());
-        }
-
-        processingStatusRepository.deleteBySubmissionId(submission.getId());
-
-
-        submissionStatusRepository.delete(submission.getSubmissionStatus());
-
-
-    }
 
     @RabbitListener(queues = Queues.SUBMISSION_DISPATCHER)
     public void handleSubmissionEvent(SubmissionEnvelope submissionEnvelope) {
