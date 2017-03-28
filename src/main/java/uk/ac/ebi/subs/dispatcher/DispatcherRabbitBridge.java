@@ -52,7 +52,7 @@ public class DispatcherRabbitBridge {
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
                 Topics.EVENT_SUBMISSION_UPDATED,
-                submissionEnvelope
+                submission
         );
 
     }
@@ -88,13 +88,13 @@ public class DispatcherRabbitBridge {
 
 
     @RabbitListener(queues = Queues.SUBMISSION_DISPATCHER)
-    public void handleSubmissionEvent(SubmissionEnvelope submissionEnvelope) {
+    public void handleSubmissionEvent(Submission submission) {
 
-        logger.info("handleSubmissionEvent {}", submissionEnvelope);
+        logger.info("handleSubmissionEvent {}", submission);
 
 
         Map<Archive,SubmissionEnvelope> readyToDispatch = dispatcherService
-                .assessDispatchReadiness(submissionEnvelope.getSubmission());
+                .assessDispatchReadiness(submission);
 
         Map<Archive,String> archiveTopic = new HashMap<>();
         archiveTopic.put(Archive.BioSamples,Topics.SAMPLES_PROCESSING);
@@ -108,15 +108,15 @@ public class DispatcherRabbitBridge {
             SubmissionEnvelope submissionEnvelopeToTransmit = entry.getValue();
 
             if(!archiveTopic.containsKey(archive)){
-                throw new IllegalStateException("Dispatcher does not have topic mapping for archive "+archive+". Processing submission "+submissionEnvelope.getSubmission().getId());
+                throw new IllegalStateException("Dispatcher does not have topic mapping for archive "+archive+". Processing submission "+submission.getId());
             }
 
             String targetTopic = archiveTopic.get(archive);
 
-            rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, targetTopic, submissionEnvelope);
-            logger.info("sent submission {} to {}", submissionEnvelope.getSubmission().getId(), targetTopic);
+            rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, targetTopic, submissionEnvelopeToTransmit);
+            logger.info("sent submission {} to {}", submission.getId(), targetTopic);
 
-            dispatcherService.updateSubmittablesStatusToSubmitted(archive,submissionEnvelope);
+            dispatcherService.updateSubmittablesStatusToSubmitted(archive,submissionEnvelopeToTransmit);
 
         }
     }
