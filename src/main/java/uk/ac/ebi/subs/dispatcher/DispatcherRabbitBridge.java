@@ -51,7 +51,7 @@ public class DispatcherRabbitBridge {
 
         rabbitMessagingTemplate.convertAndSend(
                 Exchanges.SUBMISSIONS,
-                Topics.EVENT_SUBMISSION_UPDATED,
+                Topics.EVENT_SUBMISSION_PROCESSING_UPDATED,
                 submission
         );
 
