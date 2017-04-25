@@ -4,7 +4,6 @@ package uk.ac.ebi.subs.dispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.ac.ebi.subs.data.FullSubmission;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleRef;
@@ -14,7 +13,7 @@ import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
-import uk.ac.ebi.subs.repository.FullSubmissionService;
+import uk.ac.ebi.subs.repository.SubmissionEnvelopeService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
@@ -32,7 +31,7 @@ public class DispatcherServiceImpl implements DispatcherService {
     @Override
     public Map<Archive, SubmissionEnvelope> assessDispatchReadiness(Submission submission) {
 
-        FullSubmission fullSubmission = fullSubmissionService.fetchOne(submission.getId());
+        SubmissionEnvelope submissionEnvelope = submissionEnvelopeService.fetchOne(submission.getId());
 
         /*
          * TODO this does not use the referenced sample information in supportingSamples
@@ -78,7 +77,6 @@ public class DispatcherServiceImpl implements DispatcherService {
         if (targetArchive == null) {
             logger.info("no work to do on submission {}", submission.getId());
         } else {
-            SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(fullSubmission);
             readyToDispatch.put(targetArchive, submissionEnvelope);
         }
 
@@ -87,9 +85,7 @@ public class DispatcherServiceImpl implements DispatcherService {
 
     @Override
     public Map<Archive, SubmissionEnvelope> requestSupportingInformation(Submission submission) {
-        FullSubmission fullSubmission = fullSubmissionService.fetchOne(submission.getId());
-
-        SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(fullSubmission);
+        SubmissionEnvelope submissionEnvelope = submissionEnvelopeService.fetchOne(submission.getId());
 
         determineSupportingInformationRequired(submissionEnvelope);
 
@@ -125,22 +121,19 @@ public class DispatcherServiceImpl implements DispatcherService {
 
     @Override
     public SubmissionEnvelope inflateInitialSubmission(Submission submission) {
-        FullSubmission fullSubmission = fullSubmissionService.fetchOne(submission.getId());
-
-        SubmissionEnvelope submissionEnvelope = new SubmissionEnvelope(fullSubmission);
+        SubmissionEnvelope submissionEnvelope = submissionEnvelopeService.fetchOne(submission.getId());
 
         uk.ac.ebi.subs.repository.model.Submission refreshedSubmission = submissionRepository.findOne(submission.getId());
 
         refreshedSubmission.getSubmissionStatus().setStatus(SubmissionStatusEnum.Processing);
         submissionStatusRepository.save(refreshedSubmission.getSubmissionStatus());
 
-
         return submissionEnvelope;
     }
 
     public void determineSupportingInformationRequired(SubmissionEnvelope submissionEnvelope) {
-        List<Sample> samples = submissionEnvelope.getSubmission().getSamples();
-        List<Assay> assays = submissionEnvelope.getSubmission().getAssays();
+        List<Sample> samples = submissionEnvelope.getSamples();
+        List<Assay> assays = submissionEnvelope.getAssays();
         Set<SampleRef> suppportingSamplesRequired = submissionEnvelope.getSupportingSamplesRequired();
         List<Sample> supportingSamples = submissionEnvelope.getSupportingSamples();
 
@@ -172,7 +165,7 @@ public class DispatcherServiceImpl implements DispatcherService {
 
 
     private List<Class<? extends StoredSubmittable>> submittablesClassList;
-    private FullSubmissionService fullSubmissionService;
+    private SubmissionEnvelopeService submissionEnvelopeService;
     private SubmissionRepository submissionRepository;
     private SubmissionStatusRepository submissionStatusRepository;
     private ProcessingStatusRepository processingStatusRepository;
@@ -180,7 +173,7 @@ public class DispatcherServiceImpl implements DispatcherService {
     private Set<String> processingStatusesToAllow;
 
     public DispatcherServiceImpl(
-            FullSubmissionService fullSubmissionService,
+            SubmissionEnvelopeService submissionEnvelopeService,
             SubmissionRepository submissionRepository,
             SubmissionStatusRepository submissionStatusRepository,
             ProcessingStatusRepository processingStatusRepository,
@@ -188,7 +181,7 @@ public class DispatcherServiceImpl implements DispatcherService {
             List<SubmittableRepository<?>> submissionContentsRepositories
 
     ) {
-        this.fullSubmissionService = fullSubmissionService;
+        this.submissionEnvelopeService = submissionEnvelopeService;
         this.submissionRepository = submissionRepository;
         this.submissionStatusRepository = submissionStatusRepository;
 

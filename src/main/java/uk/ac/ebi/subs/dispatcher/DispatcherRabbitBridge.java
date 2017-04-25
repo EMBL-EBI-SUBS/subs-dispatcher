@@ -39,7 +39,7 @@ public class DispatcherRabbitBridge {
 
     /**
      * Submissions being submitted by a user causes a Submission message to be sent,
-     * but downstream work needs a FullSubmission in a SubmissionEnvelope, so transform and resend
+     * but downstream work needs a SubmissionEnvelope, so transform and resend
      *
      * @param submission
      */
