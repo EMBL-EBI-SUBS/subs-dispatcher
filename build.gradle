@@ -1,12 +1,11 @@
 group 'uk.ac.ebi.subs'
-version '0.1.0-SNAPSHOT'
+version '0.1.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
-apply plugin: 'application'
 apply plugin: 'maven'
+apply plugin: 'application'
 apply plugin: 'org.hidetake.ssh'
-apply plugin: 'maven-publish'
 
 mainClassName = "uk.ac.ebi.subs.DispatcherApplication"
 
@@ -93,6 +92,10 @@ uploadArchives {
     }
 }
 
+springBoot {
+    executable = true
+}
+
 ssh.settings {
     user = 'sub_adm'
 }
@@ -139,15 +142,11 @@ task deployJar(type: SshTask, dependsOn: 'assemble') {
                 println "creating symbolic link to $jar.archiveName"
                 def result = execute "ln -s -f $jarDeployDir/$jar.archiveName $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
                 println result
-                execute "chmod u+x $jarDeployDir/*", ignoreError: false 
+                execute "chmod u+x $jarDeployDir/*", ignoreError: false
             }
         }
     }
     ssh.settings {
         knownHosts = allowAnyHosts
     }
-}
-
-springBoot {
-    executable = true
 }
