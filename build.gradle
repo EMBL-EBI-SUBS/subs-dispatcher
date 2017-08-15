@@ -5,6 +5,8 @@ apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'application'
 apply plugin: 'maven'
+apply plugin: 'org.hidetake.ssh'
+apply plugin: 'maven-publish'
 
 mainClassName = "uk.ac.ebi.subs.DispatcherApplication"
 
@@ -37,6 +39,16 @@ dependencies {
     testCompile("uk.ac.ebi.subs:subs-test-categories:0.1.0-SNAPSHOT")
 }
 
+task sourceJar(type: Jar) { from sourceSets.main.allJava }
+
+artifacts {
+    archives jar
+    archives sourceJar {
+        classifier "sources" 
+        destinationDir = new File("build/libs/sources")
+    }
+}
+
 uploadArchives {
     repositories {
         mavenDeployer {
@@ -56,10 +68,10 @@ uploadArchives {
 
             pom.project {
                 packaging 'jar'
-                url 'https://github.com/EMBL-EBI-SUBS/subs-processing-model'
+                url 'https://github.com/EMBL-EBI-SUBS/subs-dispatcher'
 
                 scm {
-                    url 'https://github.com/EMBL-EBI-SUBS/subs-processing-model.git'
+                    url 'https://github.com/EMBL-EBI-SUBS/subs-dipatcher'
                 }
 
                 licenses {
@@ -81,6 +93,60 @@ uploadArchives {
     }
 }
 
+ssh.settings {
+    user = 'sub_adm'
+}
+ 
+if (project.hasProperty('sshKeyFile')) {
+    ssh.settings.identity = new File(sshKeyFile)
+}
+ 
+if (project.hasProperty('sshPassphrase')) {
+    ssh.settings.passphrase = sshPassphrase
+}
+ 
+task printJarName {
+    doLast {
+        println "$jar.archivePath.name"
+    }
+ 
+}
+ 
+task printJarFullPath {
+    doLast {
+        println "$jar.archivePath.absolutePath"
+    }
+}
+ 
+remotes {
+    staging {
+        role('staging')
+        host = 'mac-subs-002'
+    }
+}
+ 
+task deployJar(type: SshTask, dependsOn: 'assemble') {
+    doLast {
+        def deployHome = "/data/" + project.name;
+        File jarDeployDir = new File(deployHome,"jar")
+ 
+        ssh.run {
+            session(remotes.staging) {
+                println "Creating $project.name directory in /data"
+                execute "/data/create_dirs.sh $project.name", ignoreError: false
+                println "Uploading jar $jar.archivePath.name to $jarDeployDir area on $remote"
+                put(jar.archivePath.absolutePath, jarDeployDir.absolutePath)
+                println "creating symbolic link to $jar.archiveName"
+                def result = execute "ln -s -f $jarDeployDir/$jar.archiveName $jarDeployDir/$jar.baseName" + ".jar", ignoreError: true
+                println result
+                execute "chmod u+x $jarDeployDir/*", ignoreError: false 
+            }
+        }
+    }
+    ssh.settings {
+        knownHosts = allowAnyHosts
+    }
+}
 
 springBoot {
     executable = true
