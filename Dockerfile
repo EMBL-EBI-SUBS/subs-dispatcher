@@ -14,6 +14,6 @@ ADD src ./src
 COPY gradlew gradle.properties.enc build.gradle ./
 # build the code
 RUN java -version
-RUN ./gradlew assemble
+RUN ./gradlew assemble externalCiTest
 
 CMD java -jar build/libs/*.jar --spring.data.mongodb.uri=$MONGO_URI --spring.rabbitmq.host=$RABBIT_HOST --spring.rabbitmq.port=$RABBIT_PORT

@@ -1,10 +1,8 @@
 package uk.ac.ebi.subs.dispatcher;
 
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.junit.experimental.categories.Category;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
+import uk.ac.ebi.subs.MongoDBDependentTest;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.Sample;
@@ -18,14 +16,13 @@ import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.repository.services.SubmissionHelperService;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.stream.Stream;
 
 /**
  * Created by davidr on 07/07/2017.
  */
 @Component
+@Category(MongoDBDependentTest.class)
 public class DispatchTestSubmissionSetup {
 
     private SubmissionRepository submissionRepository;
