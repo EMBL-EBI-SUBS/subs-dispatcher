@@ -3,7 +3,6 @@ version '0.1.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
-apply plugin: 'application'
 apply plugin: 'maven'
 apply plugin: 'application'
 apply plugin: 'org.hidetake.ssh'
@@ -22,21 +21,40 @@ buildscript {
 }
 
 repositories {
-        mavenLocal()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
         mavenCentral()
+        mavenLocal()
 }
 
 dependencies {
     compile("uk.ac.ebi.subs:subs-processing-model:0.1.0-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-repository:0.1.0-SNAPSHOT")
 
-    compile("uk.ac.ebi.subs:subs-data-model:1.0.3-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-data-model:0.0.1-SNAPSHOT")
     compile("uk.ac.ebi.subs:subs-messaging:1.0.3-SNAPSHOT")
 
     testCompile("junit:junit")
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("uk.ac.ebi.subs:subs-test-categories:0.1.0-SNAPSHOT")
+}
+
+task sourceJar(type: Jar) { from sourceSets.main.allJava }
+
+artifacts {
+    archives jar
+    archives sourceJar {
+        classifier "sources" 
+        destinationDir = new File("build/libs/sources")
+    }
+}
+
+task('externalCiTest', type: Test) {
+    useJUnit {
+        excludeCategories 'uk.ac.ebi.subs.MongoDBDependentTest'
+    }
+    testLogging {
+        exceptionFormat = 'full'
+    }
 }
 
 uploadArchives {
@@ -58,10 +76,10 @@ uploadArchives {
 
             pom.project {
                 packaging 'jar'
-                url 'https://github.com/EMBL-EBI-SUBS/subs-processing-model'
+                url 'https://github.com/EMBL-EBI-SUBS/subs-dispatcher'
 
                 scm {
-                    url 'https://github.com/EMBL-EBI-SUBS/subs-processing-model.git'
+                    url 'https://github.com/EMBL-EBI-SUBS/subs-dipatcher'
                 }
 
                 licenses {
