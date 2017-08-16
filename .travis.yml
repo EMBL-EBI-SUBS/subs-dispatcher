@@ -12,7 +12,7 @@ addons:
     - oracle-java8-installer
     - mongodb-org-server
     - mongodb-org-shell
-install: "./gradlew assemble"
+install: "./gradlew assemble test"
 before_script:
 - sleep 25
 before_cache:
