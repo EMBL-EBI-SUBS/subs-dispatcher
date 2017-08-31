@@ -14,11 +14,11 @@ import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
-import uk.ac.ebi.subs.repository.model.Sample;
+import uk.ac.ebi.subs.repository.model.Study;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
-import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +26,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -40,7 +38,7 @@ public class UpdateSubmittablesStatusToSubmittedTest {
     @Autowired
     ProcessingStatusRepository processingStatusRepository;
     @Autowired
-    SampleRepository sampleRepository;
+    StudyRepository studyRepository;
     @Autowired
     SubmissionRepository submissionRepository;
 
@@ -48,34 +46,29 @@ public class UpdateSubmittablesStatusToSubmittedTest {
     DispatcherService dispatcherService;
 
     Submission submission;
-    List<Sample> samples = new ArrayList<>();
+    List<Study> studies = new ArrayList<>();
     SubmissionEnvelope submissionEnvelope;
 
     @Test
-    public void updateStatus(){
+    public void updateStatus() {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("status change test");
-        dispatcherService.updateSubmittablesStatusToSubmitted(Archive.BioSamples,submissionEnvelope);
+        dispatcherService.updateSubmittablesStatusToSubmitted(Archive.BioSamples, submissionEnvelope);
         stopWatch.stop();
         System.out.println(stopWatch.prettyPrint());
 
-        for (Sample sample : samples){
-            ProcessingStatus processingStatus = processingStatusRepository.findOne(sample.getProcessingStatus().getId());
+        for (Study study : studies) {
+            ProcessingStatus processingStatus = processingStatusRepository.findOne(study.getProcessingStatus().getId());
 
             ProcessingStatusEnum expectedStatus = ProcessingStatusEnum.Draft;
 
-            if (sample.getTitle() != null && sample.getTitle().equals("hold")){
-                    expectedStatus = ProcessingStatusEnum.Rejected;
-                }
-                else if (sample.getArchive().equals(Archive.BioSamples)){
-                    expectedStatus = ProcessingStatusEnum.Dispatched;
-                }
-                else {
-                    expectedStatus = ProcessingStatusEnum.Draft;
-
+            if (study.getTitle() != null && study.getTitle().equals("hold")) {
+                expectedStatus = ProcessingStatusEnum.Rejected;
+            } else {
+                expectedStatus = ProcessingStatusEnum.Dispatched;
             }
 
-            assertThat(processingStatus.getStatus(),equalTo(expectedStatus.name()));
+            assertThat(processingStatus.getStatus(), equalTo(expectedStatus.name()));
 
 
         }
@@ -85,7 +78,7 @@ public class UpdateSubmittablesStatusToSubmittedTest {
 
 
     @Before
-    public void buildUp(){
+    public void buildUp() {
         tearDown();
 
         Team team = Team.build("test");
@@ -95,20 +88,20 @@ public class UpdateSubmittablesStatusToSubmittedTest {
         submission.setTeam(team);
         submissionRepository.insert(submission);
 
-        for (int i = 0; i < 1000; i++){
-            Sample s = new Sample();
-            s.setAlias("testSample"+i);
+        for (int i = 0; i < 1000; i++) {
+            Study s = new Study();
+            s.setAlias("testStudy" + i);
             s.setId(uuid());
             s.setTeam(team);
             s.setSubmission(submission);
 
             //set half to one archive, half to the other
-            Archive archive  = (i % 2 == 0) ? Archive.BioSamples : Archive.Pride;
+            Archive archive = (i % 2 == 0) ? Archive.BioSamples : Archive.Pride;
 
-            s.setArchive(archive);
-
-            ProcessingStatus processingStatus = ProcessingStatus.createForSubmittable(s);;
+            ProcessingStatus processingStatus = ProcessingStatus.createForSubmittable(s);
+            ;
             processingStatus.setId(uuid());
+            processingStatus.setArchive(archive.name());
 
             if (i % 3 == 0) {
                 s.setTitle("hold");
@@ -116,24 +109,24 @@ public class UpdateSubmittablesStatusToSubmittedTest {
             }
 
             processingStatusRepository.insert(processingStatus);
-            sampleRepository.insert(s);
+            studyRepository.insert(s);
 
-            samples.add(s);
+            studies.add(s);
         }
 
         submissionEnvelope = new SubmissionEnvelope();
         submissionEnvelope.setSubmission(submission);
-        submissionEnvelope.getSamples().addAll(samples);
+        submissionEnvelope.getStudies().addAll(studies);
     }
 
-    private String uuid(){
+    private String uuid() {
         return UUID.randomUUID().toString();
     }
 
 
     @After
-    public void tearDown(){
-        Stream.of(processingStatusRepository,sampleRepository,sampleRepository).forEach(repo -> repo.deleteAll());
+    public void tearDown() {
+        Stream.of(processingStatusRepository, studyRepository, studyRepository).forEach(repo -> repo.deleteAll());
     }
 
 }

@@ -63,7 +63,7 @@ public class SupportingInformationTest {
         assay.setAlias("bob");
 
         SampleRef sampleRef = new SampleRef();
-        sampleRef.setArchive(Archive.BioSamples.name());
+        //TODO sampleRef.setArchive(Archive.BioSamples.name());
         sampleRef.setAlias("bob");
         sampleRef.setAlias("S1");
 

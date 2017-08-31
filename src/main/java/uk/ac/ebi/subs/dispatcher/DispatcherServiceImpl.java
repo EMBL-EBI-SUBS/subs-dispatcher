@@ -16,10 +16,7 @@ import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Submittable;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.RefLookupService;
-import uk.ac.ebi.subs.repository.SubmissionEnvelopeService;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
-import uk.ac.ebi.subs.repository.processing.SupportingSample;
-import uk.ac.ebi.subs.repository.processing.SupportingSampleRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusBulkOperations;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SubmittableRepository;
@@ -70,7 +67,7 @@ public class DispatcherServiceImpl implements DispatcherService {
 
                 for (String submittableId : typeAndIds.getValue()) {
                     StoredSubmittable submittable = submittableRepository.findOne(submittableId);
-                    Archive archive = submittable.getArchive();
+                    Archive archive = Archive.valueOf(submittable.getProcessingStatus().getArchive());
 
 
                     List<StoredSubmittable> referencedSubmittables = submittable
@@ -127,10 +124,10 @@ public class DispatcherServiceImpl implements DispatcherService {
     private boolean isForSameArchiveAndInSameSubmission(Submission submission, Archive archive, StoredSubmittable sub) {
         Assert.notNull(sub.getSubmission().getId());
         Assert.notNull(submission.getId());
-        Assert.notNull(sub.getArchive());
+        Assert.notNull(sub.getProcessingStatus().getArchive());
         Assert.notNull(archive);
         return sub.getSubmission().getId().equals(submission.getId())
-                && sub.getArchive().equals(archive);
+                && sub.getProcessingStatus().getArchive().equals(archive.name());
     }
 
 
@@ -157,7 +154,8 @@ public class DispatcherServiceImpl implements DispatcherService {
 
         Stream<Submittable> submittables = submissionEnvelope
                 .allSubmissionItemsStream()
-                .filter(item -> archive.equals(item.getArchive()));
+                ;
+//                .filter(item -> archive.equals(item.getArchive()));
 
         processingStatusBulkOperations.updateProcessingStatus(
                 processingStatusesToAllow,

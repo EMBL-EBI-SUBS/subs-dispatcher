@@ -65,7 +65,7 @@ public class DispatchTestSubmissionSetup {
         Sample s = new Sample();
         s.setAlias(alias);
         s.setSubmission(submission);
-        s.setArchive(Archive.BioSamples);
+       // TODO s.setArchive(Archive.BioSamples);
         submittableHelperService.setupNewSubmittable(s);
         sampleRepository.insert(s);
         return s;
@@ -75,7 +75,7 @@ public class DispatchTestSubmissionSetup {
         Study s = new Study();
         s.setAlias(alias);
         s.setSubmission(submission);
-        s.setArchive(Archive.Ena);
+   //TODO     s.setArchive(Archive.Ena);
         s.setProjectRef(null);
         submittableHelperService.setupNewSubmittable(s);
         studyRepository.insert(s);
@@ -86,7 +86,7 @@ public class DispatchTestSubmissionSetup {
         Assay a = new Assay();
         a.setAlias(alias);
         a.setSubmission(submission);
-        a.setArchive(Archive.Ena);
+    //TODO    a.setArchive(Archive.Ena);
         submittableHelperService.setupNewSubmittable(a);
 
         a.setStudyRef((StudyRef) study.asRef());
