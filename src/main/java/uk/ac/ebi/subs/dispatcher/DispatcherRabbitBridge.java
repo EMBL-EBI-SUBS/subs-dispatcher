@@ -31,9 +31,7 @@ public class DispatcherRabbitBridge {
 
     RabbitMessagingTemplate rabbitMessagingTemplate;
     private DispatcherService dispatcherService;
-    private RefLookupService refLookupService;
-
-
+    private SubmissionArchiveAssignmentService submissionArchiveAssignmentService;
 
     public DispatcherRabbitBridge(
             RabbitMessagingTemplate rabbitMessagingTemplate,
@@ -45,6 +43,23 @@ public class DispatcherRabbitBridge {
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
         this.dispatcherService = dispatcherService;
     }
+
+    @RabbitListener(queues = DispatcherQueueConfig.SUBMISSION_ARCHIVE_ASSIGNMENT)
+    public void assignArchives(Submission submission){
+        logger.info("assign archives {}", submission);
+
+        submissionArchiveAssignmentService.assignArchives(submission);
+
+        logger.info("archives assigned {}", submission);
+
+        rabbitMessagingTemplate.convertAndSend(
+                Exchanges.SUBMISSIONS,
+                Topics.EVENT_SUBMISSION_PROCESSING_UPDATED,
+                submission
+        );
+    }
+
+
 
     /**
      * Determine what supporting information is required from the archvies
