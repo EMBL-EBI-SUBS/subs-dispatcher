@@ -72,7 +72,7 @@ public class DispatcherServiceImpl implements DispatcherService {
 
                     List<StoredSubmittable> referencedSubmittables = submittable
                             .refs()
-                            .filter(ref -> ref != null)
+                            .filter(Objects::nonNull)
                             .filter(ref -> ref.getAlias() != null || ref.getAccession() != null) //TODO this is because of empty refs as defaults
                             .map(ref -> lookupRefInCacheThenRepository(refLookupCache, ref) )
                             .filter(referencedSubmittable -> !isForSameArchiveAndInSameSubmission(submission, archive, referencedSubmittable))

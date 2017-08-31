@@ -5,11 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 import uk.ac.ebi.subs.data.component.*;
-import uk.ac.ebi.subs.repository.model.Assay;
-import uk.ac.ebi.subs.repository.model.Sample;
-import uk.ac.ebi.subs.repository.model.Study;
-import uk.ac.ebi.subs.repository.model.Submission;
+import uk.ac.ebi.subs.repository.model.*;
 import uk.ac.ebi.subs.repository.repos.SubmissionRepository;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
@@ -65,8 +63,8 @@ public class DispatchTestSubmissionSetup {
         Sample s = new Sample();
         s.setAlias(alias);
         s.setSubmission(submission);
-       // TODO s.setArchive(Archive.BioSamples);
         submittableHelperService.setupNewSubmittable(s);
+        setArchive(s,Archive.BioSamples);
         sampleRepository.insert(s);
         return s;
     }
@@ -75,9 +73,9 @@ public class DispatchTestSubmissionSetup {
         Study s = new Study();
         s.setAlias(alias);
         s.setSubmission(submission);
-   //TODO     s.setArchive(Archive.Ena);
         s.setProjectRef(null);
         submittableHelperService.setupNewSubmittable(s);
+        setArchive(s,Archive.Ena);
         studyRepository.insert(s);
         return s;
     }
@@ -86,14 +84,24 @@ public class DispatchTestSubmissionSetup {
         Assay a = new Assay();
         a.setAlias(alias);
         a.setSubmission(submission);
-    //TODO    a.setArchive(Archive.Ena);
-        submittableHelperService.setupNewSubmittable(a);
 
+        submittableHelperService.setupNewSubmittable(a);
+        setArchive(a,Archive.Ena);
         a.setStudyRef((StudyRef) study.asRef());
         a.getSampleUses().add(new SampleUse((SampleRef) sample.asRef()));
 
         assayRepository.insert(a);
         return a;
+    }
+
+    private void setArchive(StoredSubmittable submittable, Archive archive){
+        Assert.notNull(archive);
+        Assert.notNull(submittable.getProcessingStatus());
+        Assert.notNull(submittable.getId());
+
+        submittable.getProcessingStatus().setArchive(archive.name());
+        processingStatusRepository.save(submittable.getProcessingStatus());
+
     }
 
 }
