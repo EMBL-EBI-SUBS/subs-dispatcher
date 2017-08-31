@@ -6,6 +6,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.messaging.Queues;
 
 @Configuration
