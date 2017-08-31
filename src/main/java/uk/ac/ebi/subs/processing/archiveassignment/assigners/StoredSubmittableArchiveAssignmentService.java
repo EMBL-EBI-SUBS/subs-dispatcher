@@ -1,9 +1,8 @@
-package uk.ac.ebi.subs.dispatcher.archiveassignment;
+package uk.ac.ebi.subs.processing.archiveassignment.assigners;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.component.Archive;
-import uk.ac.ebi.subs.dispatcher.archiveassignment.*;
+import uk.ac.ebi.subs.processing.archiveassignment.ArchiveAssigner;
 import uk.ac.ebi.subs.repository.model.*;
 
 import java.text.MessageFormat;
@@ -11,9 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class StoredSubmittableArchiveAssignmentService implements ArchiveAssignmentService<StoredSubmittable> {
+public class StoredSubmittableArchiveAssignmentService implements ArchiveAssigner<StoredSubmittable> {
 
-    private Map<Class<? extends StoredSubmittable>, ArchiveAssignmentService<? extends StoredSubmittable>> archiveAssignmentServiceMap;
+    private Map<Class<? extends StoredSubmittable>, ArchiveAssigner<? extends StoredSubmittable>> archiveAssignmentServiceMap;
 
     public StoredSubmittableArchiveAssignmentService(AssayArchiveAssignmentService assayArchiveAssignmentService, AssayDataArchiveAssignmentService assayDataArchiveAssignmentService, ProjectArchiveAssignmentService projectArchiveAssignmentService, SampleArchiveAssignmentService sampleArchiveAssignmentService, StudyArchiveAssignmentService studyArchiveAssignmentService, EgaDatasetArchiveAssignmentService egaDatasetArchiveAssignmentService, EgaDacPolicyArchiveAssignmentService egaDacPolicyArchiveAssignmentService, EgaDacArchiveAssignmentService egaDacArchiveAssignmentService) {
         archiveAssignmentServiceMap = new HashMap<>();
@@ -34,7 +33,7 @@ public class StoredSubmittableArchiveAssignmentService implements ArchiveAssignm
     @Override
     public Archive assignArchive(StoredSubmittable storedSubmittable) {
         Class clazz = ((Object) storedSubmittable).getClass();
-        uk.ac.ebi.subs.dispatcher.archiveassignment.ArchiveAssignmentService archiveAssignmentService = archiveAssignmentServiceMap.get(clazz);
+        ArchiveAssigner archiveAssignmentService = archiveAssignmentServiceMap.get(clazz);
 
         if (archiveAssignmentService == null) {
             String message = MessageFormat.format("Need archiveAssignmentService for class {} in submission {} ",

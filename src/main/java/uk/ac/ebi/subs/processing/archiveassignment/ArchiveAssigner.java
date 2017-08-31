@@ -1,9 +1,9 @@
-package uk.ac.ebi.subs.dispatcher.archiveassignment;
+package uk.ac.ebi.subs.processing.archiveassignment;
 
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 
-public interface ArchiveAssignmentService<T extends StoredSubmittable> {
+public interface ArchiveAssigner<T extends StoredSubmittable> {
 
     Archive assignArchive(T submittable);
 }

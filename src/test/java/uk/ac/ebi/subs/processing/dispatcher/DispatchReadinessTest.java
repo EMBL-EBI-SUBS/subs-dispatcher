@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import org.junit.After;
 import org.junit.Before;
@@ -13,8 +13,8 @@ import uk.ac.ebi.subs.DispatcherApplication;
 import uk.ac.ebi.subs.MongoDBDependentTest;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
-import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.repository.model.*;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;

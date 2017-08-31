@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,18 +7,14 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.Archive;
-import uk.ac.ebi.subs.data.component.SampleRef;
-import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
+import uk.ac.ebi.subs.processing.archiveassignment.SubmissionArchiveAssignmentService;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
-import uk.ac.ebi.subs.repository.RefLookupService;
 import uk.ac.ebi.subs.repository.model.Submission;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Dispatcher looks at the state of a submission and works out which archives need to handle it next.
@@ -44,20 +40,7 @@ public class DispatcherRabbitBridge {
         this.dispatcherService = dispatcherService;
     }
 
-    @RabbitListener(queues = DispatcherQueueConfig.SUBMISSION_ARCHIVE_ASSIGNMENT)
-    public void assignArchives(Submission submission){
-        logger.info("assign archives {}", submission);
 
-        submissionArchiveAssignmentService.assignArchives(submission);
-
-        logger.info("archives assigned {}", submission);
-
-        rabbitMessagingTemplate.convertAndSend(
-                Exchanges.SUBMISSIONS,
-                Topics.EVENT_SUBMISSION_PROCESSING_UPDATED,
-                submission
-        );
-    }
 
 
 

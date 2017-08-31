@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;

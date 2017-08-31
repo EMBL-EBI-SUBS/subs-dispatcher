@@ -1,9 +1,8 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import org.junit.experimental.categories.Category;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.MongoDBDependentTest;
-import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.repository.model.*;

@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.archiveassigner;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
 import uk.ac.ebi.subs.data.component.*;
+import uk.ac.ebi.subs.processing.archiveassignment.SubmissionArchiveAssignmentService;
 import uk.ac.ebi.subs.repository.model.*;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;

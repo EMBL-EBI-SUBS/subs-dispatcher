@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import org.junit.After;
 import org.junit.Before;
@@ -13,6 +13,7 @@ import uk.ac.ebi.subs.MongoDBDependentTest;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.status.SubmissionStatusEnum;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
+import uk.ac.ebi.subs.processing.dispatcher.DispatcherService;
 import uk.ac.ebi.subs.repository.model.Assay;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.model.SubmissionStatus;

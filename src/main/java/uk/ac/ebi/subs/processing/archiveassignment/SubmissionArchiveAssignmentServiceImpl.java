@@ -1,19 +1,15 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.archiveassignment;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.data.component.Archive;
-import uk.ac.ebi.subs.dispatcher.archiveassignment.ArchiveAssignmentService;
-import uk.ac.ebi.subs.dispatcher.archiveassignment.StoredSubmittableArchiveAssignmentService;
+import uk.ac.ebi.subs.processing.dispatcher.SubmissionEnvelopeService;
+import uk.ac.ebi.subs.processing.archiveassignment.assigners.StoredSubmittableArchiveAssignmentService;
 import uk.ac.ebi.subs.repository.model.ProcessingStatus;
-import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Submission;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
-
-import java.text.MessageFormat;
-import java.util.Map;
 
 @Component
 public class SubmissionArchiveAssignmentServiceImpl implements SubmissionArchiveAssignmentService {

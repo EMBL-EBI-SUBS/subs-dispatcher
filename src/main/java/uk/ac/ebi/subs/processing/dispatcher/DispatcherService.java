@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.component.Archive;

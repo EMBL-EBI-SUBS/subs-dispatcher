@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import org.junit.After;
 import org.junit.Before;
@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
 import uk.ac.ebi.subs.data.component.Team;
+import uk.ac.ebi.subs.processing.dispatcher.SubmissionEnvelopeService;
 import uk.ac.ebi.subs.repository.model.Sample;
 import uk.ac.ebi.subs.repository.model.StoredSubmittable;
 import uk.ac.ebi.subs.repository.model.Study;
