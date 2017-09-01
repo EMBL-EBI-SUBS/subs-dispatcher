@@ -79,7 +79,7 @@ uploadArchives {
                 url 'https://github.com/EMBL-EBI-SUBS/subs-dispatcher'
 
                 scm {
-                    url 'https://github.com/EMBL-EBI-SUBS/subs-dispatcher'
+                    url 'https://github.com/EMBL-EBI-SUBS/subs-dispatcher.git'
                 }
 
                 licenses {
