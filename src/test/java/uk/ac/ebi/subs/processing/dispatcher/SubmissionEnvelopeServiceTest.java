@@ -3,11 +3,13 @@ package uk.ac.ebi.subs.processing.dispatcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
+import uk.ac.ebi.subs.MongoDBDependentTest;
 import uk.ac.ebi.subs.data.component.Team;
 import uk.ac.ebi.subs.processing.dispatcher.SubmissionEnvelopeService;
 import uk.ac.ebi.subs.repository.model.Sample;
@@ -27,6 +29,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
+@Category(MongoDBDependentTest.class)
 @SpringBootTest(classes = DispatcherApplication.class)
 public class SubmissionEnvelopeServiceTest {
 

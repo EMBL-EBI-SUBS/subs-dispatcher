@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.processing.archiveassignment.SubmissionArchiveAssignmentService;
@@ -18,10 +18,9 @@ import uk.ac.ebi.subs.repository.services.SubmissionHelperService;
 import uk.ac.ebi.subs.repository.services.SubmittableHelperService;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
-@RunWith(SpringRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = DispatcherApplication.class)
 public class ArchiveAssignmentTest {
 
@@ -46,25 +45,25 @@ public class ArchiveAssignmentTest {
     public void givenSample_assignBioSamples() {
         String archive = extractArchive(sample);
 
-        assertThat(archive,equalTo(Archive.BioSamples.name()));
+        assertThat(archive, equalTo(Archive.BioSamples.name()));
     }
 
     @Test
     public void givenProteomicsStudy_assignPride() {
         String archive = extractArchive(study);
 
-        assertThat(archive,equalTo(Archive.Pride.name()));
+        assertThat(archive, equalTo(Archive.Pride.name()));
     }
 
     @Test
     public void givenProteomicsAssay_assignPride() {
         String archive = extractArchive(assay);
 
-        assertThat(archive,equalTo(Archive.Pride.name()));
+        assertThat(archive, equalTo(Archive.Pride.name()));
 
     }
 
-    private String extractArchive(StoredSubmittable storedSubmittable){
+    private String extractArchive(StoredSubmittable storedSubmittable) {
         ProcessingStatus processingStatus = processingStatusRepository.findOne(storedSubmittable.getProcessingStatus().getId());
         return processingStatus.getArchive();
     }
