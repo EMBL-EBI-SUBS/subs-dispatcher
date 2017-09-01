@@ -5,8 +5,10 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import uk.ac.ebi.subs.messaging.Queues;
 
+@Configuration
 public class QueueConfig {
 
     public static final String SUBMISSION_ARCHIVE_ASSIGNMENT = "usi-submission-archive-assignment";
