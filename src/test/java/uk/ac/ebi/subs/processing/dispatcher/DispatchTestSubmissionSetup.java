@@ -20,7 +20,6 @@ import java.util.stream.Stream;
  * Created by davidr on 07/07/2017.
  */
 @Component
-@Category(MongoDBDependentTest.class)
 public class DispatchTestSubmissionSetup {
 
     private SubmissionRepository submissionRepository;
