@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import org.junit.After;
 import org.junit.Before;
@@ -7,7 +7,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.DispatcherApplication;
 import uk.ac.ebi.subs.MongoDBDependentTest;
 import uk.ac.ebi.subs.data.component.*;
@@ -23,14 +23,12 @@ import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = DispatcherApplication.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @Category(MongoDBDependentTest.class)
+@SpringBootTest(classes = DispatcherApplication.class)
 public class SupportingInformationTest {
 
 
@@ -50,7 +48,7 @@ public class SupportingInformationTest {
     Assay assay;
 
     @Before
-    public void buildUp(){
+    public void buildUp() {
         tearDown();
 
         submission = new Submission();
@@ -66,7 +64,7 @@ public class SupportingInformationTest {
         assay.setAlias("bob");
 
         SampleRef sampleRef = new SampleRef();
-        sampleRef.setArchive(Archive.BioSamples.name());
+        //TODO sampleRef.setArchive(Archive.BioSamples.name());
         sampleRef.setAlias("bob");
         sampleRef.setAlias("S1");
 
@@ -78,16 +76,16 @@ public class SupportingInformationTest {
     }
 
     @After
-    public void tearDown(){
-        Stream.of(submissionRepository,submissionStatusRepository,assayRepository).forEach(repo -> repo.deleteAll());
+    public void tearDown() {
+        Stream.of(submissionRepository, submissionStatusRepository, assayRepository).forEach(repo -> repo.deleteAll());
     }
 
     @Test
     public void testSupportingSamples() {
-        Map<Archive,SubmissionEnvelope> requests = dispatcherService.determineSupportingInformationRequired(submission);
+        Map<Archive, SubmissionEnvelope> requests = dispatcherService.determineSupportingInformationRequired(submission);
 
-        assertThat(requests.keySet(),hasSize(1));
-        assertThat(requests.containsKey(Archive.BioSamples),is(true));
+        assertThat(requests.keySet(), hasSize(1));
+        assertThat(requests.containsKey(Archive.BioSamples), is(true));
 
 
         SubmissionEnvelope envelope = requests.get(Archive.BioSamples);

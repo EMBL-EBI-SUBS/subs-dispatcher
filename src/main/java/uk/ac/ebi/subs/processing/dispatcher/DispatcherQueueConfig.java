@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -10,6 +10,10 @@ import uk.ac.ebi.subs.messaging.Queues;
 
 @Configuration
 public class DispatcherQueueConfig {
+
+
+
+
 
     /**
      * Queue for submissions to be checked for dispatch to archive agents

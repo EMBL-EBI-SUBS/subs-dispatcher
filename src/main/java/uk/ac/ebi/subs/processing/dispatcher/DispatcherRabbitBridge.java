@@ -1,4 +1,4 @@
-package uk.ac.ebi.subs.dispatcher;
+package uk.ac.ebi.subs.processing.dispatcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,18 +7,14 @@ import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Service;
 import uk.ac.ebi.subs.data.component.Archive;
-import uk.ac.ebi.subs.data.component.SampleRef;
-import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
+import uk.ac.ebi.subs.processing.archiveassignment.SubmissionArchiveAssignmentService;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
-import uk.ac.ebi.subs.repository.RefLookupService;
 import uk.ac.ebi.subs.repository.model.Submission;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Dispatcher looks at the state of a submission and works out which archives need to handle it next.
@@ -31,9 +27,7 @@ public class DispatcherRabbitBridge {
 
     RabbitMessagingTemplate rabbitMessagingTemplate;
     private DispatcherService dispatcherService;
-    private RefLookupService refLookupService;
-
-
+    private SubmissionArchiveAssignmentService submissionArchiveAssignmentService;
 
     public DispatcherRabbitBridge(
             RabbitMessagingTemplate rabbitMessagingTemplate,
@@ -45,6 +39,10 @@ public class DispatcherRabbitBridge {
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
         this.dispatcherService = dispatcherService;
     }
+
+
+
+
 
     /**
      * Determine what supporting information is required from the archvies

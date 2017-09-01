@@ -1,5 +1,5 @@
 group 'uk.ac.ebi.subs'
-version '0.1.1-SNAPSHOT'
+version '0.2.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
@@ -27,11 +27,11 @@ repositories {
 }
 
 dependencies {
-    compile("uk.ac.ebi.subs:subs-processing-model:0.1.0-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-repository:0.1.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-processing-model:0.1.1-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-repository:0.1.1-SNAPSHOT")
 
-    compile("uk.ac.ebi.subs:subs-data-model:0.0.1-SNAPSHOT")
-    compile("uk.ac.ebi.subs:subs-messaging:1.0.3-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-data-model:0.1.0-SNAPSHOT")
+    compile("uk.ac.ebi.subs:subs-messaging:0.1.0-SNAPSHOT")
 
     testCompile("junit:junit")
     testCompile("org.springframework.boot:spring-boot-starter-test")
@@ -43,7 +43,7 @@ task sourceJar(type: Jar) { from sourceSets.main.allJava }
 artifacts {
     archives jar
     archives sourceJar {
-        classifier "sources" 
+        classifier "sources"
         destinationDir = new File("build/libs/sources")
     }
 }
@@ -79,7 +79,7 @@ uploadArchives {
                 url 'https://github.com/EMBL-EBI-SUBS/subs-dispatcher'
 
                 scm {
-                    url 'https://github.com/EMBL-EBI-SUBS/subs-dipatcher'
+                    url 'https://github.com/EMBL-EBI-SUBS/subs-dispatcher.git'
                 }
 
                 licenses {
@@ -108,40 +108,40 @@ springBoot {
 ssh.settings {
     user = 'sub_adm'
 }
- 
+
 if (project.hasProperty('sshKeyFile')) {
     ssh.settings.identity = new File(sshKeyFile)
 }
- 
+
 if (project.hasProperty('sshPassphrase')) {
     ssh.settings.passphrase = sshPassphrase
 }
- 
+
 task printJarName {
     doLast {
         println "$jar.archivePath.name"
     }
- 
+
 }
- 
+
 task printJarFullPath {
     doLast {
         println "$jar.archivePath.absolutePath"
     }
 }
- 
+
 remotes {
     staging {
         role('staging')
         host = 'mac-subs-002'
     }
 }
- 
+
 task deployJar(type: SshTask, dependsOn: 'assemble') {
     doLast {
         def deployHome = "/data/" + project.name;
         File jarDeployDir = new File(deployHome,"jar")
- 
+
         ssh.run {
             session(remotes.staging) {
                 println "Creating $project.name directory in /data"
