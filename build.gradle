@@ -1,5 +1,5 @@
 group 'uk.ac.ebi.subs'
-version '0.1.1-SNAPSHOT'
+version '0.2.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
@@ -79,7 +79,7 @@ uploadArchives {
                 url 'https://github.com/EMBL-EBI-SUBS/subs-dispatcher'
 
                 scm {
-                    url 'https://github.com/EMBL-EBI-SUBS/subs-dipatcher'
+                    url 'https://github.com/EMBL-EBI-SUBS/subs-dispatcher'
                 }
 
                 licenses {
