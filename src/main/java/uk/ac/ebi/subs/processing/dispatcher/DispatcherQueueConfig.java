@@ -29,12 +29,6 @@ public class DispatcherQueueConfig {
         return BindingBuilder.bind(dispatcherQueue).to(submissionExchange).with(Queues.SUBMISSION_PROCESSING_UPDATED_DISPATCHER_ROUTING_KEY);
     }
 
-    @Bean
-    Binding dispatcherSubmittedBinding(Queue dispatcherQueue, TopicExchange submissionExchange) {
-        return BindingBuilder.bind(dispatcherQueue).to(submissionExchange).with(Queues.SUBMISSION_SUBMITTED_ROUTING_KEY);
-    }
-
-
     /**
      * Queue for submissions to be checked to see if they need supporting info
      * @return
