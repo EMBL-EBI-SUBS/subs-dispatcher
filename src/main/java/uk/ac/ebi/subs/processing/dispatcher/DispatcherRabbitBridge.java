@@ -10,11 +10,12 @@ import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
-import uk.ac.ebi.subs.processing.archiveassignment.SubmissionArchiveAssignmentService;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
+import uk.ac.ebi.subs.processing.archiveassignment.SubmissionArchiveAssignmentService;
 import uk.ac.ebi.subs.repository.model.Submission;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Dispatcher looks at the state of a submission and works out which archives need to handle it next.
@@ -41,11 +42,9 @@ public class DispatcherRabbitBridge {
     }
 
 
-
-
-
     /**
      * Determine what supporting information is required from the archvies
+     *
      * @param submission
      */
     @RabbitListener(queues = Queues.SUBMISSION_SUBMITTED_CHECK_SUPPORTING_INFO)
@@ -53,16 +52,16 @@ public class DispatcherRabbitBridge {
         logger.info("checkSupportingInfoRequirement {}", submission);
 
 
-        Map<Archive,SubmissionEnvelope> submissionEnvelopesForArchives = dispatcherService.determineSupportingInformationRequired(submission);
+        Map<Archive, SubmissionEnvelope> submissionEnvelopesForArchives = dispatcherService.determineSupportingInformationRequired(submission);
 
-        if (!submissionEnvelopesForArchives.containsKey(Archive.BioSamples)){
+        if (!submissionEnvelopesForArchives.containsKey(Archive.BioSamples)) {
             return;
         }
 
         //TODO only handles BioSamples
         SubmissionEnvelope submissionEnvelope = submissionEnvelopesForArchives.get(Archive.BioSamples);
 
-        if (submissionEnvelope.getSupportingSamplesRequired().isEmpty()){
+        if (submissionEnvelope.getSupportingSamplesRequired().isEmpty()) {
             return;
         }
 
@@ -86,22 +85,23 @@ public class DispatcherRabbitBridge {
         logger.info("dispatchToArchives {}", submission);
 
 
-        Map<Archive,SubmissionEnvelope> readyToDispatch = dispatcherService
+        Map<Archive, SubmissionEnvelope> readyToDispatch = dispatcherService
                 .assessDispatchReadiness(submission);
 
-        Map<Archive,String> archiveTopic = new HashMap<>();
-        archiveTopic.put(Archive.BioSamples,Topics.SAMPLES_PROCESSING);
-        archiveTopic.put(Archive.Ena,Topics.ENA_PROCESSING);
-        archiveTopic.put(Archive.ArrayExpress,Topics.AE_PROCESSING);
+        Map<Archive, String> archiveTopic = new HashMap<>();
+        archiveTopic.put(Archive.BioSamples, Topics.SAMPLES_PROCESSING);
+        archiveTopic.put(Archive.Ena, Topics.ENA_PROCESSING);
+        archiveTopic.put(Archive.ArrayExpress, Topics.AE_PROCESSING);
+        archiveTopic.put(Archive.BioStudies, Topics.BIOSTUDIES_PROCESSING);
 
 
-        for (Map.Entry<Archive,SubmissionEnvelope> entry : readyToDispatch.entrySet()){
+        for (Map.Entry<Archive, SubmissionEnvelope> entry : readyToDispatch.entrySet()) {
 
             Archive archive = entry.getKey();
             SubmissionEnvelope submissionEnvelopeToTransmit = entry.getValue();
 
-            if(!archiveTopic.containsKey(archive)){
-                throw new IllegalStateException("Dispatcher does not have topic mapping for archive "+archive+". Processing submission "+submission.getId());
+            if (!archiveTopic.containsKey(archive)) {
+                throw new IllegalStateException("Dispatcher does not have topic mapping for archive " + archive + ". Processing submission " + submission.getId());
             }
 
             String targetTopic = archiveTopic.get(archive);
@@ -111,7 +111,7 @@ public class DispatcherRabbitBridge {
             rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS, targetTopic, submissionEnvelopeToTransmit);
             logger.info("sent submission {} to {}", submission.getId(), targetTopic);
 
-            dispatcherService.updateSubmittablesStatusToSubmitted(archive,submissionEnvelopeToTransmit);
+            dispatcherService.updateSubmittablesStatusToSubmitted(archive, submissionEnvelopeToTransmit);
         }
     }
 }
