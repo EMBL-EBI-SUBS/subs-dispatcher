@@ -12,6 +12,7 @@ import uk.ac.ebi.subs.processing.archiveassignment.SubmissionArchiveAssignmentSe
 import uk.ac.ebi.subs.repository.model.*;
 import uk.ac.ebi.subs.repository.repos.status.ProcessingStatusRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.AssayRepository;
+import uk.ac.ebi.subs.repository.repos.submittables.ProjectRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.SampleRepository;
 import uk.ac.ebi.subs.repository.repos.submittables.StudyRepository;
 import uk.ac.ebi.subs.repository.services.SubmissionHelperService;
@@ -28,6 +29,7 @@ public class ArchiveAssignmentTest {
     private Sample sample;
     private Study study;
     private Assay assay;
+    private Project project;
 
     @Autowired
     private SubmissionArchiveAssignmentService submissionArchiveAssignmentService;
@@ -35,6 +37,7 @@ public class ArchiveAssignmentTest {
     @Before
     public void setUp() {
         Submission submission = submissionHelperService.createSubmission(team, submitter);
+        project = createProject("testProject", submission);
         sample = createSample("testSample", submission);
         study = createStudy("testStudy", submission, StudyDataType.Proteomics);
         assay = createAssay("testAssay", submission, sample, study);
@@ -46,6 +49,13 @@ public class ArchiveAssignmentTest {
         String archive = extractArchive(sample);
 
         assertThat(archive, equalTo(Archive.BioSamples.name()));
+    }
+
+    @Test
+    public void givenProject_assignBioStudies(){
+        String archive = extractArchive(project);
+
+        assertThat(archive,equalTo(Archive.BioStudies.name()));
     }
 
     @Test
@@ -104,6 +114,18 @@ public class ArchiveAssignmentTest {
 
     }
 
+    public Project createProject(String alias, Submission submission) {
+        Project project = new Project();
+        project.setAlias(alias);
+        project.setSubmission(submission);
+
+        submittableHelperService.setupNewSubmittable(project);
+
+        projectRepository.insert(project);
+        return project;
+    }
+
+
     @Autowired
     private SubmissionHelperService submissionHelperService;
 
@@ -121,6 +143,9 @@ public class ArchiveAssignmentTest {
 
     @Autowired
     private ProcessingStatusRepository processingStatusRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
 
 }
