@@ -1,5 +1,5 @@
 group 'uk.ac.ebi.subs'
-version '0.3.0-SNAPSHOT'
+version '0.3.1-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
@@ -35,7 +35,6 @@ dependencies {
 
     testCompile("junit:junit")
     testCompile("org.springframework.boot:spring-boot-starter-test")
-    testCompile("uk.ac.ebi.subs:subs-test-categories:0.1.0-SNAPSHOT")
 }
 
 task sourceJar(type: Jar) { from sourceSets.main.allJava }
