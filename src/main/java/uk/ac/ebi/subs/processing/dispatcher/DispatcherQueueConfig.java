@@ -11,17 +11,13 @@ import uk.ac.ebi.subs.messaging.Queues;
 @Configuration
 public class DispatcherQueueConfig {
 
-
-
-
-
     /**
      * Queue for submissions to be checked for dispatch to archive agents
      * @return
      */
     @Bean
     Queue dispatcherQueue() {
-        return new Queue(Queues.SUBMISSION_DISPATCHER,true);
+        return Queues.buildQueueWithDlx(Queues.SUBMISSION_DISPATCHER);
     }
 
     @Bean
@@ -33,7 +29,7 @@ public class DispatcherQueueConfig {
      * Queue for submissions to be checked to see if they need supporting info
      * @return
      */
-    @Bean Queue onSubmitCheckForSupportingInfoQueue() {return new Queue(Queues.SUBMISSION_SUBMITTED_CHECK_SUPPORTING_INFO,true); }
+    @Bean Queue onSubmitCheckForSupportingInfoQueue() {return Queues.buildQueueWithDlx(Queues.SUBMISSION_SUBMITTED_CHECK_SUPPORTING_INFO); }
 
 
     @Bean
