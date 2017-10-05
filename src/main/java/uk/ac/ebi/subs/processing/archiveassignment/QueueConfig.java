@@ -19,7 +19,7 @@ public class QueueConfig {
      */
 
     @Bean
-    Queue archiveAssignmentQueue() {return new Queue(SUBMISSION_ARCHIVE_ASSIGNMENT,true);}
+    Queue archiveAssignmentQueue() {return Queues.buildQueueWithDlx(SUBMISSION_ARCHIVE_ASSIGNMENT);}
 
     @Bean
     Binding archiveAssignmentBinding(Queue archiveAssignmentQueue, TopicExchange submissionExchange){
